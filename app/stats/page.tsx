@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getDocs } from "firebase/firestore";
 import { getUserRecordsCollection } from "@/lib/firestore";
-import { Record } from "@/lib/types";
+import { Record as FootprintRecord } from "@/lib/types";
 import Link from "next/link";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function StatsPage() {
     const { user } = useAuth();
-    const [records, setRecords] = useState<Record[]>([]);
+    const [records, setRecords] = useState<FootprintRecord[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

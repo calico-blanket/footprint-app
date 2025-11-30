@@ -11,7 +11,9 @@ import { useSearchParams } from "next/navigation";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
-export default function MapPage() {
+import { Suspense } from "react";
+
+function MapContent() {
     const { user } = useAuth();
     const searchParams = useSearchParams();
     const [allRecords, setAllRecords] = useState<Record[]>([]);
@@ -78,5 +80,13 @@ export default function MapPage() {
             </div>
             <MapView records={filteredRecords} centerLocation={centerLocation} />
         </div>
+    );
+}
+
+export default function MapPage() {
+    return (
+        <Suspense fallback={<LoadingSpinner />}>
+            <MapContent />
+        </Suspense>
     );
 }
