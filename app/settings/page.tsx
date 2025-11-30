@@ -1,6 +1,7 @@
 "use client";
 import DataManagement from "@/components/DataManagement";
 import CategoryManager from "@/components/CategoryManager";
+import InstallPrompt from "@/components/InstallPrompt";
 import Link from "next/link";
 
 export default function SettingsPage() {
@@ -16,6 +17,7 @@ export default function SettingsPage() {
                     </Link>
                     <h1 className="text-2xl font-bold">設定</h1>
                 </div>
+                <InstallPrompt />
                 <CategoryManager />
                 <DataManagement />
             </div>
