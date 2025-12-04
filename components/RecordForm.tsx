@@ -334,7 +334,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                                 }
                             }}
                             placeholder="タグを入力してEnter"
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
                         />
                         <button
                             type="button"
@@ -373,7 +373,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                         type="datetime-local"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
                     />
                 </div>
 
@@ -385,7 +385,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                             step="any"
                             value={location?.lat || ""}
                             onChange={(e) => setLocation(prev => ({ ...prev!, lat: parseFloat(e.target.value) }))}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
                             required
                         />
                     </div>
@@ -396,7 +396,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                             step="any"
                             value={location?.lng || ""}
                             onChange={(e) => setLocation(prev => ({ ...prev!, lng: parseFloat(e.target.value) }))}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
                             required
                         />
                     </div>
@@ -430,7 +430,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                         value={memo}
                         onChange={(e) => setMemo(e.target.value)}
                         rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
                     />
                 </div>
 
