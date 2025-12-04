@@ -44,6 +44,10 @@ export default function TimelinePage() {
             const lower = filters.keyword.toLowerCase();
             result = result.filter(r => r.memo.toLowerCase().includes(lower));
         }
+        if (filters.tag) {
+            const lowerTag = filters.tag.toLowerCase();
+            result = result.filter(r => r.tags?.some(t => t.toLowerCase().includes(lowerTag)));
+        }
         if (filters.startDate) {
             result = result.filter(r => new Date(r.date.toDate()) >= new Date(filters.startDate));
         }

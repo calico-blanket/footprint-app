@@ -39,6 +39,50 @@ export default function DataManagement() {
         }
     };
 
+    const handleExportCSV = async () => {
+        if (!user) return;
+        try {
+            const snapshot = await getDocs(getUserRecordsCollection(user.uid));
+            const records = snapshot.docs.map(d => d.data());
+
+            // CSV Header
+            const header = ["Category", "Date", "Memo", "Tags", "ImageURLs", "Latitude", "Longitude"];
+            const rows = records.map(r => {
+                const dateStr = r.date ? new Date(r.date.toDate()).toLocaleString() : "";
+                const tagsStr = r.tags ? r.tags.join(", ") : "";
+                const imagesStr = r.imageUrls ? r.imageUrls.join("; ") : "";
+
+                // Escape quotes and wrap in quotes
+                const escape = (str: string) => `"${str.replace(/"/g, '""')}"`;
+
+                return [
+                    escape(r.category),
+                    escape(dateStr),
+                    escape(r.memo),
+                    escape(tagsStr),
+                    escape(imagesStr),
+                    r.location.lat,
+                    r.location.lng
+                ].join(",");
+            });
+
+            const csvContent = [header.join(","), ...rows].join("\n");
+
+            // Add BOM for Excel compatibility
+            const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `footprint_export_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success("CSV Export started");
+        } catch (e) {
+            console.error(e);
+            toast.error("CSV Export failed");
+        }
+    };
+
     const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!user || !e.target.files?.[0]) return;
         setImporting(true);
@@ -89,6 +133,9 @@ export default function DataManagement() {
                     <p className="text-sm text-gray-500 mb-3">Download all your records as a JSON file.</p>
                     <button onClick={handleExport} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
                         Export JSON
+                    </button>
+                    <button onClick={handleExportCSV} className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        Export CSV
                     </button>
                 </div>
                 <div className="border-t pt-6">

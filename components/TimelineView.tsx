@@ -53,6 +53,16 @@ export default function TimelineView({ records }: TimelineViewProps) {
                             <p className="text-gray-800 whitespace-pre-wrap text-sm">{record.memo}</p>
                         )}
 
+                        {record.tags && record.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                                {record.tags.map(tag => (
+                                    <span key={tag} className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full">
+                                        #{tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+
                         {record.imageUrls.length > 0 && (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
                                 {record.imageUrls.map((url, i) => (

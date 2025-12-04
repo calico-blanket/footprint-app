@@ -11,6 +11,7 @@ export interface Record {
     };
     memo: string;
     category: string;
+    tags?: string[];
     imageUrls: string[];
     syncedFromOffline: boolean;
     userId: string;

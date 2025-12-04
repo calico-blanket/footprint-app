@@ -29,6 +29,8 @@ export default function RecordForm({ initialData }: RecordFormProps) {
     const [memo, setMemo] = useState(initialData?.memo || "");
     const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
     const [category, setCategory] = useState(initialData?.category || DEFAULT_CATEGORIES[0]);
+    const [tags, setTags] = useState<string[]>(initialData?.tags || []);
+    const [tagInput, setTagInput] = useState("");
     const [date, setDate] = useState<string>(
         initialData?.date
             ? new Date(initialData.date.toDate()).toISOString().slice(0, 16)
@@ -167,6 +169,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     location,
                     memo,
                     category,
+                    tags,
                     imageUrls: initialData?.imageUrls || [],
                     userId: user.uid,
                 };
@@ -208,6 +211,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                 location,
                 memo,
                 category,
+                tags,
                 imageUrls: finalImageUrls,
                 userId: user.uid,
             };
@@ -309,6 +313,58 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                             </option>
                         ))}
                     </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">タグ</label>
+                    <div className="flex gap-2 mt-1">
+                        <input
+                            type="text"
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    if (tagInput.trim()) {
+                                        if (!tags.includes(tagInput.trim())) {
+                                            setTags([...tags, tagInput.trim()]);
+                                        }
+                                        setTagInput("");
+                                    }
+                                }
+                            }}
+                            placeholder="タグを入力してEnter"
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (tagInput.trim()) {
+                                    if (!tags.includes(tagInput.trim())) {
+                                        setTags([...tags, tagInput.trim()]);
+                                    }
+                                    setTagInput("");
+                                }
+                            }}
+                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                        >
+                            追加
+                        </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {tags.map((tag) => (
+                            <span key={tag} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {tag}
+                                <button
+                                    type="button"
+                                    onClick={() => setTags(tags.filter((t) => t !== tag))}
+                                    className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:outline-none"
+                                >
+                                    ×
+                                </button>
+                            </span>
+                        ))}
+                    </div>
                 </div>
 
                 <div>

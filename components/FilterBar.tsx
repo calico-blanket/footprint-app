@@ -6,6 +6,7 @@ export interface FilterState {
     endDate: string;
     category: string;
     keyword: string;
+    tag: string;
 }
 
 interface FilterBarProps {
@@ -30,6 +31,7 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
         endDate: "",
         category: "All",
         keyword: "",
+        tag: "",
     });
 
     // Removed useEffect to prevent infinite loop
@@ -74,6 +76,16 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
                         <option key={c} value={c}>{c}</option>
                     ))}
                 </select>
+            </div>
+            <div className="flex-1 min-w-[200px]">
+                <label className="block text-xs font-medium text-gray-700 mb-1">Tag</label>
+                <input
+                    type="text"
+                    placeholder="Search tags..."
+                    value={filters.tag}
+                    onChange={(e) => handleChange("tag", e.target.value)}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                />
             </div>
             <div className="flex-1 min-w-[200px]">
                 <label className="block text-xs font-medium text-gray-700 mb-1">Keyword</label>

@@ -66,6 +66,15 @@ export default function MapView({ records, centerLocation }: MapViewProps) {
                                 {new Date(record.date.toDate()).toLocaleDateString()} {new Date(record.date.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                             <p className="text-sm line-clamp-2 mb-2">{record.memo}</p>
+                            {record.tags && record.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mb-2">
+                                    {record.tags.map(tag => (
+                                        <span key={tag} className="inline-block px-1.5 py-0.5 text-[10px] bg-gray-100 text-gray-600 rounded-full">
+                                            #{tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                             <Link
                                 href={`/records/${record.id}`}
                                 className="text-blue-600 text-sm hover:underline"
