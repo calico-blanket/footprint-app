@@ -19,6 +19,13 @@ interface RecordFormProps {
     initialData?: Record;
 }
 
+// Helper function to format date for datetime-local input (in local timezone)
+const formatDateTimeLocal = (date: Date): string => {
+    const offset = date.getTimezoneOffset() * 60000; // offset in milliseconds
+    const localDate = new Date(date.getTime() - offset);
+    return localDate.toISOString().slice(0, 16);
+};
+
 export default function RecordForm({ initialData }: RecordFormProps) {
     const { user } = useAuth();
     const router = useRouter();
@@ -33,8 +40,8 @@ export default function RecordForm({ initialData }: RecordFormProps) {
     const [tagInput, setTagInput] = useState("");
     const [date, setDate] = useState<string>(
         initialData?.date
-            ? new Date(initialData.date.toDate()).toISOString().slice(0, 16)
-            : new Date().toISOString().slice(0, 16)
+            ? formatDateTimeLocal(initialData.date.toDate())
+            : formatDateTimeLocal(new Date())
     );
     const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
         initialData?.location || null
@@ -98,7 +105,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                             toast.info("写真から位置情報を取得しました");
                         }
                         if (exif.date && !initialData) {
-                            const dateStr = new Date(exif.date).toISOString().slice(0, 16);
+                            const dateStr = formatDateTimeLocal(new Date(exif.date));
                             setDate(dateStr);
                             toast.info("写真から日付を取得しました");
                         }
