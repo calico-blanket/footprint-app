@@ -32,11 +32,14 @@ interface MapViewProps {
 }
 
 export default function MapView({ records, centerLocation }: MapViewProps) {
+    // Filter out "家事" category records from map display
+    const displayRecords = records.filter(record => !record.category.includes("家事"));
+
     // Use centerLocation if provided, otherwise use first record or default to Tokyo
     const center = centerLocation
         ? [centerLocation.lat, centerLocation.lng] as [number, number]
-        : records.length > 0
-            ? [records[0].location.lat, records[0].location.lng] as [number, number]
+        : displayRecords.length > 0
+            ? [displayRecords[0].location.lat, displayRecords[0].location.lng] as [number, number]
             : [35.6895, 139.6917] as [number, number];
 
     return (
@@ -46,7 +49,7 @@ export default function MapView({ records, centerLocation }: MapViewProps) {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {records.map((record) => (
+            {displayRecords.map((record) => (
                 <Marker
                     key={record.id}
                     position={[record.location.lat, record.location.lng]}

@@ -1,5 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { DEFAULT_CATEGORIES } from "@/components/CategoryManager";
 
 export interface FilterState {
     startDate: string;
@@ -13,19 +17,10 @@ interface FilterBarProps {
     onFilterChange: (filters: FilterState) => void;
 }
 
-const CATEGORIES = [
-    "All",
-    "🍽️ 食事",
-    "🏞️ 風景",
-    "🚶 散歩",
-    "🚗 移動",
-    "🛒 買い物",
-    "🎉 イベント",
-    "📝 メモ",
-    "🔖 その他",
-];
+
 
 export default function FilterBar({ onFilterChange }: FilterBarProps) {
+    const { user } = useAuth();
     const [filters, setFilters] = useState<FilterState>({
         startDate: "",
         endDate: "",
@@ -34,6 +29,26 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
         tag: "",
     });
     const [isExpanded, setIsExpanded] = useState(false);
+    const [categories, setCategories] = useState<string[]>(["All", ...DEFAULT_CATEGORIES]);
+
+    // Load custom categories from Firestore
+    useEffect(() => {
+        if (user) {
+            const loadCategories = async () => {
+                try {
+                    const docRef = doc(db, "users", user.uid, "settings", "categories");
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const customCategories = docSnap.data().list || DEFAULT_CATEGORIES;
+                        setCategories(["All", ...customCategories]);
+                    }
+                } catch (error) {
+                    console.error("Error loading categories:", error);
+                }
+            };
+            loadCategories();
+        }
+    }, [user]);
 
     // Removed useEffect to prevent infinite loop
     // useEffect(() => {
@@ -110,7 +125,7 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
                             onChange={(e) => handleChange("category", e.target.value)}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border"
                         >
-                            {CATEGORIES.map((c) => (
+                            {categories.map((c) => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
                         </select>
