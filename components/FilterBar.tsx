@@ -15,11 +15,12 @@ export interface FilterState {
 
 interface FilterBarProps {
     onFilterChange: (filters: FilterState) => void;
+    availableTags?: string[];
 }
 
 
 
-export default function FilterBar({ onFilterChange }: FilterBarProps) {
+export default function FilterBar({ onFilterChange, availableTags = [] }: FilterBarProps) {
     const { user } = useAuth();
     const [filters, setFilters] = useState<FilterState>({
         startDate: "",
@@ -30,6 +31,10 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
     });
     const [isExpanded, setIsExpanded] = useState(false);
     const [categories, setCategories] = useState<string[]>(["All", ...DEFAULT_CATEGORIES]);
+
+    // Autocomplete states
+    const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
 
     // Load custom categories from Firestore
     useEffect(() => {
@@ -133,13 +138,94 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
 
                     <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">タグ</label>
-                        <input
-                            type="text"
-                            placeholder="タグで検索..."
-                            value={filters.tag}
-                            onChange={(e) => handleChange("tag", e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border"
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="タグで検索..."
+                                value={filters.tag}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    handleChange("tag", value);
+
+                                    // Update suggestions
+                                    if (value.trim() && availableTags.length > 0) {
+                                        const filtered = availableTags.filter(
+                                            tag => tag.toLowerCase().includes(value.toLowerCase())
+                                        );
+                                        setTagSuggestions(filtered);
+                                        setSelectedSuggestionIndex(-1);
+                                    } else {
+                                        setTagSuggestions([]);
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "ArrowDown") {
+                                        e.preventDefault();
+                                        setSelectedSuggestionIndex(prev =>
+                                            prev < tagSuggestions.length - 1 ? prev + 1 : prev
+                                        );
+                                    } else if (e.key === "ArrowUp") {
+                                        e.preventDefault();
+                                        setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+                                    } else if (e.key === "Enter") {
+                                        if (selectedSuggestionIndex >= 0 && tagSuggestions[selectedSuggestionIndex]) {
+                                            e.preventDefault();
+                                            const selected = tagSuggestions[selectedSuggestionIndex];
+                                            handleChange("tag", selected);
+                                            setTagSuggestions([]);
+                                            setSelectedSuggestionIndex(-1);
+                                        }
+                                    } else if (e.key === "Escape") {
+                                        setTagSuggestions([]);
+                                    }
+                                }}
+                                onBlur={() => {
+                                    setTimeout(() => {
+                                        setTagSuggestions([]);
+                                        setSelectedSuggestionIndex(-1);
+                                    }, 200);
+                                }}
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 pr-10 border"
+                            />
+                            <button
+                                type="button"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => {
+                                    if (tagSuggestions.length > 0) {
+                                        setTagSuggestions([]);
+                                    } else {
+                                        setTagSuggestions(availableTags || []);
+                                    }
+                                    // Focus input if not focused? Not strictly necessary if preventDefault worked
+                                }}
+                                className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            {tagSuggestions.length > 0 && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                                    {tagSuggestions.map((suggestion, index) => (
+                                        <div
+                                            key={suggestion}
+                                            onMouseDown={(e) => {
+                                                e.preventDefault(); // Prevent blur from firing
+                                                handleChange("tag", suggestion);
+                                                setTagSuggestions([]);
+                                                setSelectedSuggestionIndex(-1);
+                                            }}
+                                            className={`px-3 py-2 cursor-pointer text-sm ${index === selectedSuggestionIndex
+                                                ? 'bg-blue-100 text-blue-900'
+                                                : 'hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            {suggestion}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div>

@@ -82,7 +82,8 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                             record.tags.forEach((tag: string) => tagsSet.add(tag));
                         }
                     });
-                    setAllTags(Array.from(tagsSet).sort());
+                    const collator = new Intl.Collator('ja', { sensitivity: 'base' });
+                    setAllTags(Array.from(tagsSet).sort(collator.compare));
                 } catch (error) {
                     console.error("Error loading tags:", error);
                 }
@@ -414,8 +415,26 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                                         }, 200);
                                     }}
                                     placeholder="タグを入力してEnter（カンマ区切りで複数可）"
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 pr-10 border text-gray-900"
                                 />
+                                <button
+                                    type="button"
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => {
+                                        if (tagSuggestions.length > 0) {
+                                            setTagSuggestions([]);
+                                        } else {
+                                            const available = allTags.filter(t => !tags.includes(t));
+                                            setTagSuggestions(available);
+                                        }
+                                    }}
+                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600"
+                                    tabIndex={-1}
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
                                 {tagSuggestions.length > 0 && (
                                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto">
                                         {tagSuggestions.map((suggestion, index) => (

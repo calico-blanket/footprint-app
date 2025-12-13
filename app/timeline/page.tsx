@@ -1,6 +1,6 @@
 "use client";
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getDocs } from "firebase/firestore";
 import { getUserRecordsCollection } from "@/lib/firestore";
@@ -14,6 +14,19 @@ export default function TimelinePage() {
     const [allRecords, setAllRecords] = useState<Record[]>([]);
     const [filteredRecords, setFilteredRecords] = useState<Record[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Calculate all unique tags for autocomplete
+    const allTags = useMemo(() => {
+        const tags = new Set<string>();
+        allRecords.forEach(record => {
+            if (record.tags && Array.isArray(record.tags)) {
+                record.tags.forEach(tag => tags.add(tag));
+            }
+        });
+        // Sort tags using Japanese collation (あいうえお順)
+        const collator = new Intl.Collator('ja', { sensitivity: 'base' });
+        return Array.from(tags).sort(collator.compare);
+    }, [allRecords]);
 
     useEffect(() => {
         if (user) {
@@ -64,7 +77,7 @@ export default function TimelinePage() {
     return (
         <div className="min-h-screen bg-gray-50 p-4">
             <div className="max-w-2xl mx-auto">
-                <FilterBar onFilterChange={handleFilterChange} />
+                <FilterBar onFilterChange={handleFilterChange} availableTags={allTags} />
                 <TimelineView records={filteredRecords} />
             </div>
         </div>

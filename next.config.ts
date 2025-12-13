@@ -3,6 +3,7 @@ import withPWA from "@ducanh2912/next-pwa";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Trigger server restart
 };
 
 // Disable PWA in development to avoid workbox errors

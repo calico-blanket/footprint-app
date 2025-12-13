@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getDocs } from "firebase/firestore";
 import { getUserRecordsCollection } from "@/lib/firestore";
@@ -20,6 +20,19 @@ function MapContent() {
     const [filteredRecords, setFilteredRecords] = useState<Record[]>([]);
     const [loading, setLoading] = useState(true);
     const [centerLocation, setCenterLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+    // Calculate all unique tags for autocomplete
+    const allTags = useMemo(() => {
+        const tags = new Set<string>();
+        allRecords.forEach(record => {
+            if (record.tags && Array.isArray(record.tags)) {
+                record.tags.forEach(tag => tags.add(tag));
+            }
+        });
+        // Sort tags using Japanese collation (あいうえお順)
+        const collator = new Intl.Collator('ja', { sensitivity: 'base' });
+        return Array.from(tags).sort(collator.compare);
+    }, [allRecords]);
 
     // Read lat/lng from URL parameters
     useEffect(() => {
@@ -80,7 +93,7 @@ function MapContent() {
     return (
         <div className="h-[calc(100vh-4rem)] md:h-screen w-full relative">
             <div className="absolute top-4 left-4 right-4 z-[1000] md:w-96 md:left-16">
-                <FilterBar onFilterChange={handleFilterChange} />
+                <FilterBar onFilterChange={handleFilterChange} availableTags={allTags} />
             </div>
             <MapView records={filteredRecords} centerLocation={centerLocation} />
         </div>

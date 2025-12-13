@@ -1,6 +1,7 @@
 "use client";
 import DataManagement from "@/components/DataManagement";
 import CategoryManager from "@/components/CategoryManager";
+import TagManager from "@/components/TagManager";
 import InstallPrompt from "@/components/InstallPrompt";
 import Link from "next/link";
 
@@ -19,6 +20,7 @@ export default function SettingsPage() {
                 </div>
                 <InstallPrompt />
                 <CategoryManager />
+                <TagManager />
                 <DataManagement />
             </div>
         </div>
