@@ -1,19 +1,4 @@
-# Footprint App
-
-個人用のフットプリント（足跡）記録アプリ。写真と位置情報を紐づけて記録し、タイムラインやマップで振り返ることができるPWA（Progressive Web App）。
-
-## 🌐 デプロイURL
-
-**本番環境:** https://footprint-app.vercel.app
-
-## 技術スタック
-
-- **フロントエンド**: Next.js 16.0.5 (App Router), React 19.2.0, TypeScript
-- **スタイリング**: Tailwind CSS v4
-- **バックエンド**: Firebase (Authentication, Firestore, Storage)
-- **地図**: OpenStreetMap (react-leaflet)
-- **PWA**: @ducanh2912/next-pwa
-- **デプロイ**: Vercel
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 

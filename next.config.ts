@@ -5,7 +5,12 @@ const nextConfig: NextConfig = {
   /* config options here */
 };
 
-export default withPWA({
-  dest: "public",
-  register: true,
-})(nextConfig);
+// Disable PWA in development to avoid workbox errors
+const isDev = process.env.NODE_ENV === "development";
+
+export default isDev
+  ? nextConfig
+  : withPWA({
+    dest: "public",
+    register: true,
+  })(nextConfig);

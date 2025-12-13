@@ -5,7 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { compressImage } from "@/lib/compression";
 import { getExifData } from "@/lib/exif";
 import { uploadImage, deleteImage } from "@/lib/storage";
-import { Timestamp, doc, setDoc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { Timestamp, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs } from "firebase/firestore";
 import { getUserRecordsCollection } from "@/lib/firestore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -38,6 +38,9 @@ export default function RecordForm({ initialData }: RecordFormProps) {
     const [category, setCategory] = useState(initialData?.category || DEFAULT_CATEGORIES[0]);
     const [tags, setTags] = useState<string[]>(initialData?.tags || []);
     const [tagInput, setTagInput] = useState("");
+    const [allTags, setAllTags] = useState<string[]>([]);
+    const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
     const [date, setDate] = useState<string>(
         initialData?.date
             ? formatDateTimeLocal(initialData.date.toDate())
@@ -49,7 +52,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
 
-    // Load custom categories
+    // Load custom categories and all existing tags
     useEffect(() => {
         if (user) {
             const loadCategories = async () => {
@@ -68,7 +71,25 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     console.error("Error loading categories:", error);
                 }
             };
+
+            const loadAllTags = async () => {
+                try {
+                    const snapshot = await getDocs(getUserRecordsCollection(user.uid));
+                    const tagsSet = new Set<string>();
+                    snapshot.docs.forEach(doc => {
+                        const record = doc.data();
+                        if (record.tags && Array.isArray(record.tags)) {
+                            record.tags.forEach((tag: string) => tagsSet.add(tag));
+                        }
+                    });
+                    setAllTags(Array.from(tagsSet).sort());
+                } catch (error) {
+                    console.error("Error loading tags:", error);
+                }
+            };
+
             loadCategories();
+            loadAllTags();
         }
     }, [user, initialData]);
 
@@ -324,39 +345,120 @@ export default function RecordForm({ initialData }: RecordFormProps) {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700">タグ</label>
-                    <div className="flex gap-2 mt-1">
-                        <input
-                            type="text"
-                            value={tagInput}
-                            onChange={(e) => setTagInput(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                    e.preventDefault();
+                    <div className="relative">
+                        <div className="flex gap-2 mt-1">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    value={tagInput}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setTagInput(value);
+
+                                        // Update suggestions based on input
+                                        if (value.trim()) {
+                                            const lastTag = value.split(',').pop()?.trim() || '';
+                                            if (lastTag) {
+                                                const filtered = allTags.filter(
+                                                    tag => tag.toLowerCase().includes(lastTag.toLowerCase()) && !tags.includes(tag)
+                                                );
+                                                setTagSuggestions(filtered);
+                                                setSelectedSuggestionIndex(-1);
+                                            } else {
+                                                setTagSuggestions([]);
+                                            }
+                                        } else {
+                                            setTagSuggestions([]);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "ArrowDown") {
+                                            e.preventDefault();
+                                            setSelectedSuggestionIndex(prev =>
+                                                prev < tagSuggestions.length - 1 ? prev + 1 : prev
+                                            );
+                                        } else if (e.key === "ArrowUp") {
+                                            e.preventDefault();
+                                            setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+                                        } else if (e.key === "Enter") {
+                                            e.preventDefault();
+
+                                            // If a suggestion is selected, use it
+                                            if (selectedSuggestionIndex >= 0 && tagSuggestions[selectedSuggestionIndex]) {
+                                                const selectedTag = tagSuggestions[selectedSuggestionIndex];
+                                                if (!tags.includes(selectedTag)) {
+                                                    setTags([...tags, selectedTag]);
+                                                }
+                                                setTagInput("");
+                                                setTagSuggestions([]);
+                                                setSelectedSuggestionIndex(-1);
+                                            } else if (tagInput.trim()) {
+                                                // Process comma-separated tags
+                                                const newTags = tagInput.split(',').map(t => t.trim()).filter(t => t && !tags.includes(t));
+                                                if (newTags.length > 0) {
+                                                    setTags([...tags, ...newTags]);
+                                                }
+                                                setTagInput("");
+                                                setTagSuggestions([]);
+                                            }
+                                        } else if (e.key === "Escape") {
+                                            setTagSuggestions([]);
+                                            setSelectedSuggestionIndex(-1);
+                                        }
+                                    }}
+                                    onBlur={() => {
+                                        // Delay to allow clicking on suggestions
+                                        setTimeout(() => {
+                                            setTagSuggestions([]);
+                                            setSelectedSuggestionIndex(-1);
+                                        }, 200);
+                                    }}
+                                    placeholder="タグを入力してEnter（カンマ区切りで複数可）"
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
+                                />
+                                {tagSuggestions.length > 0 && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                                        {tagSuggestions.map((suggestion, index) => (
+                                            <div
+                                                key={suggestion}
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    if (!tags.includes(suggestion)) {
+                                                        setTags([...tags, suggestion]);
+                                                    }
+                                                    setTagInput("");
+                                                    setTagSuggestions([]);
+                                                    setSelectedSuggestionIndex(-1);
+                                                }}
+                                                className={`px-3 py-2 cursor-pointer ${index === selectedSuggestionIndex
+                                                    ? 'bg-blue-100 text-blue-900'
+                                                    : 'hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {suggestion}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
                                     if (tagInput.trim()) {
-                                        if (!tags.includes(tagInput.trim())) {
-                                            setTags([...tags, tagInput.trim()]);
+                                        const newTags = tagInput.split(',').map(t => t.trim()).filter(t => t && !tags.includes(t));
+                                        if (newTags.length > 0) {
+                                            setTags([...tags, ...newTags]);
                                         }
                                         setTagInput("");
+                                        setTagSuggestions([]);
                                     }
-                                }
-                            }}
-                            placeholder="タグを入力してEnter"
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (tagInput.trim()) {
-                                    if (!tags.includes(tagInput.trim())) {
-                                        setTags([...tags, tagInput.trim()]);
-                                    }
-                                    setTagInput("");
-                                }
-                            }}
-                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                        >
-                            追加
-                        </button>
+                                }}
+                                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+                            >
+                                追加
+                            </button>
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500">例: 旅行, 東京, グルメ (#は不要です)</p>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                         {tags.map((tag) => (

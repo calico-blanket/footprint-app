@@ -72,6 +72,21 @@
     - 記録フォームの入力欄の文字色を濃く変更（`text-gray-900`）
     - タグ、日時、緯度、経度、メモの各入力欄に適用
 
+### UI/UX改善フェーズ3（2025-12-13）
+18. **時間表示の修正**
+    - UTC/JSTのタイムゾーン問題を解決（9時間ずれを修正）
+    - `formatDateTimeLocal`関数を追加してローカルタイムゾーンで正しく表示
+    - EXIF日時の取得時もタイムゾーンを考慮
+19. **タグ機能の大幅強化**
+    - オートコンプリート機能：既存タグの候補を入力中に表示
+    - 矢印キー（↑↓）で候補選択、Enterで追加
+    - カンマ区切りで複数タグを一度に入力可能（例: 旅行,東京,グルメ）
+    - サンプル表示を追加（「例: 旅行, 東京, グルメ (#は不要です)」）
+    - 入力欄と追加ボタンのサイズを適切に調整
+20. **開発環境の改善**
+    - 開発環境でPWAを無効化してworkboxエラーを回避
+    - 本番環境のみでPWAを有効化
+
 ---
 
 ## 実装が完了した機能
@@ -222,9 +237,6 @@ NEXT_PUBLIC_ALLOWED_EMAILS=sesame0518@gmail.com
 4. ~~PWAインストールボタンが表示されない~~ → `InstallPrompt`コンポーネント追加
 5. ~~CSVエクスポートがAndroidで正しく動作しない~~ → ダウンロードフォルダに正常に保存されることを確認（OneDrive誘導は端末設定の問題）
 6. ~~入力フィールドの文字が薄い~~ → `text-gray-900`を追加
-7. ~~時間表示のずれ（UTC/JST）~~ → `formatDateTimeLocal`関数を追加してタイムゾーンオフセットを考慮
-8. ~~Next.js脆弱性によるVercelビルドエラー~~ → Next.js 16.0.5 → 16.0.10にアップデート
-9. ~~Firebase認証エラー（auth/unauthorized domain）~~ → Vercelドメインを承認済みドメインに追加
 
 ### 現在の制限事項
 - **地図サービス**: OpenStreetMapを使用（Google Maps APIキー不要）
@@ -340,87 +352,6 @@ NEXT_PUBLIC_ALLOWED_EMAILS=sesame0518@gmail.com
 - ブラウザのコンソールでエラーを確認
 - ファイルサイズが大きすぎないか確認（圧縮機能が動作しているか）
 
-#### 5. Vercelデプロイエラー（2025-12-13に発生）
-**問題**: GitHubへのプッシュは成功するが、Vercelでビルドが失敗する
-**エラーメッセージ**: `Error: Vulnerable version of Next.js detected, please update immediately`
-
-**原因**: Next.js 16.0.5に既知のセキュリティ脆弱性（React Server Components CVE）が存在
-
-**解決手順**:
-1. **脆弱性の確認**
-   ```bash
-   npm outdated next
-   # Next.js 16.0.5 → 16.0.10 が利用可能と表示される
-   ```
-
-2. **Next.jsのアップデート**
-   ```bash
-   npm install next@16.0.10 eslint-config-next@16.0.10
-   ```
-
-3. **脆弱性の解消確認**
-   ```bash
-   npm audit
-   # found 0 vulnerabilities と表示されることを確認
-   ```
-
-4. **GitHubへプッシュ**
-   ```bash
-   git add .
-   git commit -m "Update Next.js to 16.0.10 to fix security vulnerability"
-   git push origin main
-   ```
-
-5. **Vercelで自動デプロイが成功することを確認**
-
-**注意点**:
-- Vercelは脆弱性のあるNext.jsバージョンでのビルドを拒否する
-- デプロイログで具体的なエラーメッセージを確認することが重要
-- セキュリティアップデートは優先的に適用すべき
-
-#### 6. Firebase認証エラー（auth/unauthorized domain）
-**問題**: Vercelデプロイ後、スマホアプリで「Firebase error (auth/unauthorized domain)」が表示される
-
-**原因**: Vercelのドメイン（`footprint-app.vercel.app`）がFirebaseの承認済みドメインに登録されていない
-
-**解決手順**:
-1. Firebase Console（https://console.firebase.google.com）にアクセス
-2. プロジェクト「footprint-app-e48fa」を選択
-3. 左サイドバーの「Authentication」をクリック
-4. 上部の「Settings」タブをクリック
-5. 下にスクロールして「承認済みドメイン」（Authorized domains）セクションを探す
-6. 「ドメインを追加」ボタンをクリック
-7. `footprint-app.vercel.app` を入力して追加
-8. スマホアプリを再読み込み（またはキャッシュクリア）
-
-**追加すべきドメイン**:
-- `footprint-app.vercel.app` （メインドメイン）
-- 必要に応じて: `footprint-app-git-main-[ユーザー名]-projects.vercel.app`
-
-#### 7. PWAキャッシュ問題
-**問題**: デプロイ後もスマホアプリに変更が反映されない
-
-**原因**: Service Workerがキャッシュを保持している
-
-**解決方法**:
-1. **アプリの再読み込み**（最も簡単）
-   - 画面を下に引っ張ってリフレッシュ（Pull to Refresh）
-   - ブラウザメニューから「再読み込み」
-
-2. **キャッシュクリア**
-   - ブラウザ設定からサイトデータ/キャッシュをクリア
-   - アプリを再度開く
-
-3. **アプリの再インストール**（最も確実）
-   - ホーム画面からアプリを削除
-   - ブラウザで https://footprint-app.vercel.app にアクセス
-   - 「ホーム画面に追加」で再インストール
-
-**予防策**:
-- Service Workerの更新戦略を見直す（`skipWaiting`の設定など）
-- バージョン番号をマニフェストに含める
-- ファイルサイズが大きすぎないか確認（圧縮機能が動作しているか）
-
 ---
 
 ## 開発環境のセットアップ手順
@@ -477,14 +408,8 @@ git push origin main
 - **2025-11-30**: 機能追加フェーズ1、Vercelデプロイ、PWAインストール機能追加
 - **2025-12-04**: タグ機能、CSVエクスポート機能追加
 - **2025-12-05**: UI改善（入力フィールドの視認性向上）
-- **2025-12-13**: 
-  - 時間表示の修正（UTC/JSTタイムゾーン問題、9時間ずれを解消）
-  - Next.jsセキュリティアップデート（16.0.5 → 16.0.10）
-  - Firebase承認済みドメインにVercel URLを追加
-  - README.mdにデプロイURL追加
-  - トラブルシューティング記録の追加（Vercelデプロイエラー、Firebase認証エラー、PWAキャッシュ問題）
+- **2025-12-13**: UI/UX改善フェーズ3（時間表示修正、タグオートコンプリート、開発環境改善）
 
 ---
 
-**最終更新**: 2025-12-13 19:58
-
+**最終更新**: 2025-12-13 20:30
