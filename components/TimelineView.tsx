@@ -107,15 +107,17 @@ export default function TimelineView({ records }: TimelineViewProps) {
                 )}
 
                 {/* Record List */}
-                <div className="space-y-4 pb-24 md:pb-4">
-                    {displayRecords.length === 0 ? (
-                        <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-lg border border-dashed">
-                            {viewMode === 'calendar'
-                                ? "この日の記録はありません"
-                                : "記録がまだありません"}
-                        </div>
-                    ) : (
-                        displayRecords.map((record) => (
+                {displayRecords.length === 0 && (
+                    <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-lg border border-dashed">
+                        {viewMode === 'calendar'
+                            ? "この日の記録はありません"
+                            : "記録がまだありません"}
+                    </div>
+                )}
+
+                {displayRecords.length > 0 && (
+                    <div className="space-y-4">
+                        {displayRecords.map((record) => (
                             <div key={record.id} className="bg-white p-4 rounded-lg shadow-sm border flex flex-col gap-3">
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -176,8 +178,10 @@ export default function TimelineView({ records }: TimelineViewProps) {
                                     </Link>
                                 </div>
                             </div>
-                        )))}
-                </div>
-            </>
-            );
+                        ))}
+                    </div>
+                )}
+            </div>
+        </>
+    );
 }

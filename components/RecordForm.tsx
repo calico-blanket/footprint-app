@@ -161,7 +161,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     // Compress
                     const compressed = await compressImage(file);
                     processedFiles.push(compressed);
-                    newPreviews.push(URL.createObjectURL(compressed));
+
                 } catch (error) {
                     console.error("Error processing file", error);
                     toast.error(`画像の処理に失敗しました: ${error instanceof Error ? error.message : "Unknown error"}`);
