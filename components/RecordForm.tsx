@@ -9,7 +9,7 @@ import { Timestamp, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs } from "f
 import { getUserRecordsCollection } from "@/lib/firestore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Record } from "@/lib/types";
+import { Record, CategoryItem } from "@/lib/types";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import ImageLightbox from "@/components/ImageLightbox";
 import { DEFAULT_CATEGORIES } from "@/components/CategoryManager";
@@ -60,11 +60,22 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     const docRef = doc(db, "users", user.uid, "settings", "categories");
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        const customCategories = docSnap.data().list || DEFAULT_CATEGORIES;
-                        setCategories(customCategories);
+                        const data = docSnap.data().list;
+                        let loadedCategories: string[] = DEFAULT_CATEGORIES;
+
+                        if (Array.isArray(data) && data.length > 0) {
+                            if (typeof data[0] === 'string') {
+                                loadedCategories = data as string[];
+                            } else {
+                                // Handle new CategoryItem structure
+                                loadedCategories = (data as CategoryItem[]).map(c => c.name);
+                            }
+                        }
+
+                        setCategories(loadedCategories);
                         // Update category if it's still default
                         if (!initialData) {
-                            setCategory(customCategories[0]);
+                            setCategory(loadedCategories[0]);
                         }
                     }
                 } catch (error) {
