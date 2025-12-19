@@ -10,7 +10,7 @@ export default function Home() {
 
     useEffect(() => {
         if (!loading && user) {
-            router.push("/map");
+            router.push("/records/new");
         }
     }, [user, loading, router]);
 
