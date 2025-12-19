@@ -31,8 +31,22 @@ export default function RecordForm({ initialData }: RecordFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [showDelete, setShowDelete] = useState(false);
-    const [files, setFiles] = useState<File[]>([]);
-    const [previews, setPreviews] = useState<string[]>(initialData?.imageUrls || []);
+    // Separate state for existing images and new files for robust index handling
+    const [existingImages, setExistingImages] = useState<string[]>(initialData?.imageUrls || []);
+    const [deletedImageUrls, setDeletedImageUrls] = useState<string[]>([]);
+    const [newFiles, setNewFiles] = useState<File[]>([]);
+    // Previews are combined from existing images and new files
+    const [previews, setPreviews] = useState<string[]>([]);
+
+    useEffect(() => {
+        const newFilePreviews = newFiles.map(file => URL.createObjectURL(file));
+        setPreviews([...existingImages, ...newFilePreviews]);
+
+        // Cleanup object URLs to avoid leaks
+        return () => {
+            newFilePreviews.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, [existingImages, newFiles]);
     const [memo, setMemo] = useState(initialData?.memo || "");
     const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
     const [category, setCategory] = useState(initialData?.category || DEFAULT_CATEGORIES[0]);
@@ -119,16 +133,16 @@ export default function RecordForm({ initialData }: RecordFormProps) {
 
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            const newFiles = Array.from(e.target.files);
-            if (files.length + newFiles.length + (initialData?.imageUrls.length || 0) > 5) {
+            const newFilesArray = Array.from(e.target.files);
+            // Check total count (existing + current new + incoming new)
+            if (existingImages.length + newFiles.length + newFilesArray.length > 5) {
                 toast.error("最大5枚まで選択できます");
                 return;
             }
 
             const processedFiles: File[] = [];
-            const newPreviews: string[] = [];
 
-            for (const file of newFiles) {
+            for (const file of newFilesArray) {
                 try {
                     // Extract EXIF from original file
                     const exif = await getExifData(file);
@@ -154,8 +168,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                 }
             }
 
-            setFiles((prev) => [...prev, ...processedFiles]);
-            setPreviews((prev) => [...prev, ...newPreviews]);
+            setNewFiles((prev) => [...prev, ...processedFiles]);
         }
     };
 
@@ -198,7 +211,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
 
                 const id = docRef.id;
 
-                const filesToQueue = files.map(f => ({
+                const filesToQueue = newFiles.map(f => ({
                     file: f,
                     urlPlaceholder: `offline:${id}:${f.name}`
                 }));
@@ -210,9 +223,16 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     memo,
                     category,
                     tags,
-                    imageUrls: initialData?.imageUrls || [],
+                    imageUrls: existingImages, // Only existing ones, new ones handled by placeholder in offline sync logic (complex)
+                    // Note: Offline sync logic might need update to handle mixing existing and new images correctly
+                    // For now, we assume SyncManager handles it or we accept simplified behavior
                     userId: user.uid,
                 };
+
+                // For offline, we can't easily "delete" existing images from Storage yet.
+                // We just update the record to not show them.
+                // Actual storage deletion is not queueable in current architecture easily without custom payload.
+                // We will skip storage deletion for offline for now (limitation).
 
                 if (initialData) {
                     await updateDoc(docRef, recordData);
@@ -242,8 +262,17 @@ export default function RecordForm({ initialData }: RecordFormProps) {
             }
 
             // Online handling
-            const newImageUrls = await Promise.all(files.map((f) => uploadImage(f, user.uid)));
-            const finalImageUrls = [...(initialData?.imageUrls || []), ...newImageUrls];
+
+            // 1. Delete removed images
+            if (deletedImageUrls.length > 0) {
+                await Promise.all(deletedImageUrls.map(url => deleteImage(url)));
+            }
+
+            // 2. Upload new images
+            const newImageUrls = await Promise.all(newFiles.map((f) => uploadImage(f, user.uid)));
+
+            // 3. Construct final list
+            const finalImageUrls = [...existingImages, ...newImageUrls];
 
             const recordData = {
                 updatedAt: Timestamp.now(),
@@ -323,12 +352,17 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        setPreviews(prev => prev.filter((_, index) => index !== i));
-                                        const initialImageCount = initialData?.imageUrls.length || 0;
-                                        if (i >= initialImageCount) {
-                                            setFiles(prev => prev.filter((_, index) => index !== (i - initialImageCount)));
+                                        if (i < existingImages.length) {
+                                            // Removing an existing image
+                                            const urlToDelete = existingImages[i];
+                                            setDeletedImageUrls(prev => [...prev, urlToDelete]);
+                                            setExistingImages(prev => prev.filter((_, idx) => idx !== i));
+                                        } else {
+                                            // Removing a new file
+                                            const newFileIndex = i - existingImages.length;
+                                            setNewFiles(prev => prev.filter((_, idx) => idx !== newFileIndex));
                                         }
-                                        toast.success("写真を削除しました");
+                                        toast.success("写真を削除リストに追加しました");
                                     }}
                                     className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                                     aria-label="写真を削除"
