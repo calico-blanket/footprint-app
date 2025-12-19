@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { getDocs } from "firebase/firestore";
+import { getDocs, doc, getDoc } from "firebase/firestore";
 import { getUserRecordsCollection } from "@/lib/firestore";
-import { Record } from "@/lib/types";
+import { db } from "@/lib/firebase";
+import { Record, CategoryItem } from "@/lib/types";
 import dynamic from "next/dynamic";
 import FilterBar, { FilterState } from "@/components/FilterBar";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -45,21 +46,45 @@ function MapContent() {
 
     useEffect(() => {
         if (user) {
-            const fetchRecords = async () => {
+            const fetchData = async () => {
                 try {
+                    // Fetch categories to check visibility settings
+                    const categoryDocRef = doc(db, "users", user.uid, "settings", "categories");
+                    const categoryDocSnap = await getDoc(categoryDocRef);
+                    let hiddenCategories = new Set<string>();
+
+                    if (categoryDocSnap.exists()) {
+                        const data = categoryDocSnap.data().list;
+                        if (Array.isArray(data) && data.length > 0 && typeof data[0] !== 'string') {
+                            (data as CategoryItem[]).forEach(c => {
+                                if (!c.showOnMap) {
+                                    hiddenCategories.add(c.name);
+                                }
+                            });
+                        }
+                    }
+
+                    // Fetch records
                     const snapshot = await getDocs(getUserRecordsCollection(user.uid));
-                    const data = snapshot.docs.map(d => d.data());
-                    setAllRecords(data);
-                    setFilteredRecords(data);
+                    const data = snapshot.docs.map(d => d.data() as Record);
+
+                    // Filter out hidden categories globally for the map
+                    // Note: If we want them to show in the list but not on map, we should filter only for MapView
+                    // But here we filteredRecords is passed to MapView.
+                    // If we want FilterBar to still show them in dropdown... FilterBar loads categories separately.
+                    // This is fine. We just filter the records here.
+                    const visibleData = data.filter(r => !hiddenCategories.has(r.category));
+
+                    setAllRecords(visibleData);
+                    setFilteredRecords(visibleData);
                 } catch (error) {
-                    console.error("Error fetching records", error);
+                    console.error("Error fetching data", error);
                 } finally {
                     setLoading(false);
                 }
             };
-            fetchRecords();
+            fetchData();
         } else if (user === null) {
-            // Not logged in, handled by layout/middleware or just show empty/loading until redirect
             setLoading(false);
         }
     }, [user]);

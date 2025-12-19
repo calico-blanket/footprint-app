@@ -32,8 +32,8 @@ interface MapViewProps {
 }
 
 export default function MapView({ records, centerLocation }: MapViewProps) {
-    // Filter out "家事" category records from map display
-    const displayRecords = records.filter(record => !record.category.includes("家事"));
+    // Filter out "家事" category records from map display is now handled in parent component
+    const displayRecords = records;
 
     // Use centerLocation if provided, otherwise use first record or default to Tokyo
     const center = centerLocation

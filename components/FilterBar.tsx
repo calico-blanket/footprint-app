@@ -4,6 +4,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { DEFAULT_CATEGORIES } from "@/components/CategoryManager";
+import { CategoryItem } from "@/lib/types";
 
 export interface FilterState {
     startDate: string;
@@ -44,8 +45,20 @@ export default function FilterBar({ onFilterChange, availableTags = [] }: Filter
                     const docRef = doc(db, "users", user.uid, "settings", "categories");
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        const customCategories = docSnap.data().list || DEFAULT_CATEGORIES;
-                        setCategories(["All", ...customCategories]);
+                        const data = docSnap.data().list;
+                        let customCategoryNames: string[] = [];
+
+                        if (Array.isArray(data) && data.length > 0) {
+                            if (typeof data[0] === 'string') {
+                                customCategoryNames = data as string[];
+                            } else {
+                                customCategoryNames = (data as CategoryItem[]).map(c => c.name);
+                            }
+                        } else {
+                            customCategoryNames = DEFAULT_CATEGORIES;
+                        }
+
+                        setCategories(["All", ...customCategoryNames]);
                     }
                 } catch (error) {
                     console.error("Error loading categories:", error);

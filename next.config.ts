@@ -14,4 +14,5 @@ export default isDev
   : withPWA({
     dest: "public",
     register: true,
+    disable: isDev,
   })(nextConfig);

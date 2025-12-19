@@ -23,3 +23,8 @@ export interface UserProfile {
     displayName: string;
     photoURL: string;
 }
+
+export interface CategoryItem {
+    name: string;
+    showOnMap: boolean;
+}
