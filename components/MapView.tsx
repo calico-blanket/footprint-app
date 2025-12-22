@@ -21,30 +21,53 @@ const icon = L.icon({
 function SetViewOnChange({ center }: { center: [number, number] }) {
     const map = useMap();
     useEffect(() => {
-        map.setView(center, 15);
+        // Use flyTo for smoother animation when searching/centering
+        map.flyTo(center, 16, {
+            duration: 1.5
+        });
     }, [center, map]);
+    return null;
+}
+
+// Component to automatically fit bounds to visible records
+function AutoFitBounds({ records, active }: { records: Record[], active: boolean }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!active || records.length === 0) return;
+
+        const bounds = L.latLngBounds(records.map(r => [r.location.lat, r.location.lng]));
+        if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+    }, [records, active, map]);
+
     return null;
 }
 
 interface MapViewProps {
     records: Record[];
     centerLocation?: { lat: number; lng: number } | null;
+    autoFit?: boolean;
 }
 
-export default function MapView({ records, centerLocation }: MapViewProps) {
+export default function MapView({ records, centerLocation, autoFit = false }: MapViewProps) {
     // Filter out "家事" category records from map display is now handled in parent component
     const displayRecords = records;
 
     // Use centerLocation if provided, otherwise use first record or default to Tokyo
+    // Note: Initial center is less important if we use Geolocation in parent, but good fallback
+    const defaultCenter: [number, number] = [35.6895, 139.6917];
     const center = centerLocation
         ? [centerLocation.lat, centerLocation.lng] as [number, number]
         : displayRecords.length > 0
             ? [displayRecords[0].location.lat, displayRecords[0].location.lng] as [number, number]
-            : [35.6895, 139.6917] as [number, number];
+            : defaultCenter;
 
     return (
         <MapContainer center={center} zoom={centerLocation ? 15 : 13} style={{ height: "100%", width: "100%" }}>
             {centerLocation && <SetViewOnChange center={center} />}
+            {autoFit && <AutoFitBounds records={displayRecords} active={autoFit} />}
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

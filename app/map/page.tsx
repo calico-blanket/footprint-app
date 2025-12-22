@@ -10,6 +10,8 @@ import FilterBar, { FilterState } from "@/components/FilterBar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useSearchParams } from "next/navigation";
 
+import MapSearch from "@/components/MapSearch";
+
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
 import { Suspense } from "react";
@@ -21,6 +23,7 @@ function MapContent() {
     const [filteredRecords, setFilteredRecords] = useState<Record[]>([]);
     const [loading, setLoading] = useState(true);
     const [centerLocation, setCenterLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [shouldAutoFit, setShouldAutoFit] = useState(false);
 
     // Calculate all unique tags for autocomplete
     const allTags = useMemo(() => {
@@ -41,6 +44,22 @@ function MapContent() {
         const lng = searchParams.get('lng');
         if (lat && lng) {
             setCenterLocation({ lat: parseFloat(lat), lng: parseFloat(lng) });
+        } else {
+            // If no URL params, try to get current location
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        setCenterLocation({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        });
+                    },
+                    (error) => {
+                        console.log("Geolocation error or permission denied:", error);
+                        // Fallback to default (Tokyo) happens in MapView if centerLocation is null
+                    }
+                );
+            }
         }
     }, [searchParams]);
 
@@ -111,16 +130,23 @@ function MapContent() {
             result = result.filter(r => new Date(r.date.toDate()) <= end);
         }
         setFilteredRecords(result);
+        setShouldAutoFit(true); // Auto-fit bounds when filter changes
+    };
+
+    const handleLocationSelect = (lat: number, lng: number) => {
+        setCenterLocation({ lat, lng });
+        setShouldAutoFit(false); // Don't auto-fit when jumping to specific location
     };
 
     if (loading) return <LoadingSpinner />;
 
     return (
         <div className="h-[calc(100vh-4rem)] md:h-screen w-full relative">
-            <div className="absolute top-4 left-4 right-4 z-[1000] md:w-96 md:left-16">
+            <div className="absolute top-4 left-4 right-4 z-[1000] md:w-96 md:left-16 flex flex-col gap-2">
                 <FilterBar onFilterChange={handleFilterChange} availableTags={allTags} />
+                <MapSearch records={allRecords} onSelectLocation={handleLocationSelect} />
             </div>
-            <MapView records={filteredRecords} centerLocation={centerLocation} />
+            <MapView records={filteredRecords} centerLocation={centerLocation} autoFit={shouldAutoFit} />
         </div>
     );
 }
