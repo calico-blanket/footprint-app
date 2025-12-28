@@ -45,6 +45,7 @@
    - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
    - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
    - `NEXT_PUBLIC_FIREBASE_APP_ID`
+   - `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
    - `NEXT_PUBLIC_ALLOWED_EMAILS` (Comma-separated list of allowed emails, e.g., `me@example.com,spouse@example.com`)
 5. Click **Deploy**.
 
