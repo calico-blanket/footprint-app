@@ -168,15 +168,17 @@ export default function TimelineView({ records }: TimelineViewProps) {
                                     </div>
                                 )}
 
-                                <div className="text-xs text-gray-400 flex items-center gap-1">
-                                    <span>📍</span>
-                                    <Link
-                                        href={`/map?lat=${record.location.lat}&lng=${record.location.lng}`}
-                                        className="hover:text-primary-600 hover:underline cursor-pointer transition-colors"
-                                    >
-                                        {record.location.lat.toFixed(5)}, {record.location.lng.toFixed(5)}
-                                    </Link>
-                                </div>
+                                {record.location && (
+                                    <div className="text-xs text-gray-400 flex items-center gap-1">
+                                        <span>📍</span>
+                                        <Link
+                                            href={`/map?lat=${record.location.lat}&lng=${record.location.lng}`}
+                                            className="hover:text-primary-600 hover:underline cursor-pointer transition-colors"
+                                        >
+                                            {record.location.lat.toFixed(5)}, {record.location.lng.toFixed(5)}
+                                        </Link>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

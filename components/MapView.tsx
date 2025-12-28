@@ -36,7 +36,10 @@ function AutoFitBounds({ records, active }: { records: Record[], active: boolean
     useEffect(() => {
         if (!active || records.length === 0) return;
 
-        const bounds = L.latLngBounds(records.map(r => [r.location.lat, r.location.lng]));
+        const validRecords = records.filter(r => r.location);
+        if (validRecords.length === 0) return;
+
+        const bounds = L.latLngBounds(validRecords.map(r => [r.location.lat, r.location.lng]));
         if (bounds.isValid()) {
             map.fitBounds(bounds, { padding: [50, 50] });
         }
@@ -53,7 +56,9 @@ interface MapViewProps {
 
 export default function MapView({ records, centerLocation, autoFit = false }: MapViewProps) {
     // Filter out "家事" category records from map display is now handled in parent component
-    const displayRecords = records;
+    // Filter out "家事" category records from map display is now handled in parent component
+    // Also ensure records have valid location data
+    const displayRecords = records.filter(r => r.location && typeof r.location.lat === 'number' && typeof r.location.lng === 'number');
 
     // Use centerLocation if provided, otherwise use first record or default to Tokyo
     // Note: Initial center is less important if we use Geolocation in parent, but good fallback
