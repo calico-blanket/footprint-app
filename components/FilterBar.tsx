@@ -97,7 +97,7 @@ export default function FilterBar({ onFilterChange, availableTags = [] }: Filter
                     <span className="text-lg">🔍</span>
                     <span className="font-medium text-gray-700">フィルター</span>
                     {hasActiveFilters && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                             適用中
                         </span>
                     )}
@@ -122,7 +122,7 @@ export default function FilterBar({ onFilterChange, availableTags = [] }: Filter
                                 type="date"
                                 value={filters.startDate}
                                 onChange={(e) => handleChange("startDate", e.target.value)}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border"
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 text-sm p-2 border"
                             />
                         </div>
                         <div>
@@ -131,7 +131,7 @@ export default function FilterBar({ onFilterChange, availableTags = [] }: Filter
                                 type="date"
                                 value={filters.endDate}
                                 onChange={(e) => handleChange("endDate", e.target.value)}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border"
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 text-sm p-2 border"
                             />
                         </div>
                     </div>
@@ -141,7 +141,7 @@ export default function FilterBar({ onFilterChange, availableTags = [] }: Filter
                         <select
                             value={filters.category}
                             onChange={(e) => handleChange("category", e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border"
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 text-sm p-2 border"
                         >
                             {categories.map((c) => (
                                 <option key={c} value={c}>{c}</option>
@@ -198,7 +198,7 @@ export default function FilterBar({ onFilterChange, availableTags = [] }: Filter
                                         setSelectedSuggestionIndex(-1);
                                     }, 200);
                                 }}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 pr-10 border"
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 text-sm p-2 pr-10 border"
                             />
                             <button
                                 type="button"
@@ -229,7 +229,7 @@ export default function FilterBar({ onFilterChange, availableTags = [] }: Filter
                                                 setSelectedSuggestionIndex(-1);
                                             }}
                                             className={`px-3 py-2 cursor-pointer text-sm ${index === selectedSuggestionIndex
-                                                ? 'bg-blue-100 text-blue-900'
+                                                ? 'bg-primary-100 text-primary-900'
                                                 : 'hover:bg-gray-100'
                                                 }`}
                                         >
@@ -248,7 +248,7 @@ export default function FilterBar({ onFilterChange, availableTags = [] }: Filter
                             placeholder="メモ内を検索..."
                             value={filters.keyword}
                             onChange={(e) => handleChange("keyword", e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border"
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 text-sm p-2 border"
                         />
                     </div>
 

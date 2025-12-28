@@ -30,7 +30,7 @@ export default function LoginView() {
                 <button
                     onClick={handleLogin}
                     disabled={loading}
-                    className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    className="w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
                 >
                     {loading ? "Signing in..." : "Sign in with Google"}
                 </button>

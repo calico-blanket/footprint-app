@@ -134,7 +134,7 @@ export default function DataManagement() {
                     <button onClick={handleExport} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
                         Export JSON
                     </button>
-                    <button onClick={handleExportCSV} className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    <button onClick={handleExportCSV} className="ml-2 bg-primary-400 hover:bg-primary-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
                         Export CSV
                     </button>
                 </div>
@@ -152,11 +152,11 @@ export default function DataManagement() {
                     file:mr-4 file:py-2 file:px-4
                     file:rounded-md file:border-0
                     file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100"
+                    file:bg-primary-50 file:text-primary-700
+                    hover:file:bg-primary-100"
                         />
                     </label>
-                    {importing && <p className="text-sm text-blue-600 mt-2">Importing...</p>}
+                    {importing && <p className="text-sm text-primary-600 mt-2">Importing...</p>}
                 </div>
             </div>
         </div>

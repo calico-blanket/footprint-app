@@ -79,7 +79,7 @@ export default function StatsPage() {
         <div className="min-h-screen bg-gray-50 p-4">
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center gap-4 mb-6">
-                    <Link href="/" className="text-blue-600 hover:text-blue-800">
+                    <Link href="/" className="text-primary-600 hover:text-primary-800">
                         ← 戻る
                     </Link>
                     <h1 className="text-2xl font-bold">📊 統計</h1>
@@ -89,7 +89,7 @@ export default function StatsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white p-6 rounded-lg shadow-sm">
                         <div className="text-gray-500 text-sm mb-1">総レコード数</div>
-                        <div className="text-3xl font-bold text-blue-600">{totalRecords}</div>
+                        <div className="text-3xl font-bold text-primary-600">{totalRecords}</div>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-sm">
                         <div className="text-gray-500 text-sm mb-1">総写真数</div>
@@ -115,7 +115,7 @@ export default function StatsPage() {
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2">
                                         <div
-                                            className="bg-blue-600 h-2 rounded-full transition-all"
+                                            className="bg-primary-400 h-2 rounded-full transition-all"
                                             style={{ width: `${percentage}%` }}
                                         />
                                     </div>
@@ -169,7 +169,7 @@ export default function StatsPage() {
                                     href={`https://www.google.com/maps?q=${data.lat},${data.lng}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 text-sm"
+                                    className="text-primary-600 hover:text-primary-800 text-sm"
                                 >
                                     地図で見る →
                                 </a>

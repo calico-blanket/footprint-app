@@ -54,7 +54,7 @@ export default function InstallPrompt() {
                     </p>
                     <button
                         onClick={handleInstallClick}
-                        className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                        className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 9.75V1.5m0 0 9 7.5M12 1.5 3 9" />
@@ -68,7 +68,7 @@ export default function InstallPrompt() {
                         iPhoneをお使いの方は、以下の手順でインストールできます：
                     </p>
                     <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 bg-gray-50 p-4 rounded">
-                        <li>画面下の<span className="font-bold text-blue-600">共有ボタン</span>（四角から矢印）をタップ</li>
+                        <li>画面下の<span className="font-bold text-primary-600">共有ボタン</span>（四角から矢印）をタップ</li>
                         <li>メニューをスクロールして<span className="font-bold">「ホーム画面に追加」</span>を選択</li>
                         <li>右上の「追加」をタップ</li>
                     </ol>

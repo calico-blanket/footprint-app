@@ -42,7 +42,7 @@ export default function TimelineView({ records }: TimelineViewProps) {
         if (view === 'month' && recordDates.has(date.toDateString())) {
             return (
                 <div className="flex justify-center mt-1">
-                    <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
+                    <div className="h-1.5 w-1.5 bg-primary-400 rounded-full"></div>
                 </div>
             );
         }
@@ -72,7 +72,7 @@ export default function TimelineView({ records }: TimelineViewProps) {
                     <button
                         onClick={() => setViewMode('list')}
                         className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'list'
-                            ? 'bg-white text-blue-600 shadow-sm'
+                            ? 'bg-white text-primary-600 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
@@ -81,7 +81,7 @@ export default function TimelineView({ records }: TimelineViewProps) {
                     <button
                         onClick={() => setViewMode('calendar')}
                         className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'calendar'
-                            ? 'bg-white text-blue-600 shadow-sm'
+                            ? 'bg-white text-primary-600 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
@@ -121,7 +121,7 @@ export default function TimelineView({ records }: TimelineViewProps) {
                             <div key={record.id} className="bg-white p-4 rounded-lg shadow-sm border flex flex-col gap-3">
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="inline-block px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">
+                                        <span className="inline-block px-2 py-1 text-xs font-semibold bg-primary-100 text-primary-800 rounded">
                                             {record.category}
                                         </span>
                                         <span className="text-sm text-gray-500">
@@ -130,7 +130,7 @@ export default function TimelineView({ records }: TimelineViewProps) {
                                     </div>
                                     <Link
                                         href={`/records/${record.id}`}
-                                        className="text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-gray-100"
+                                        className="text-gray-400 hover:text-primary-600 p-1 rounded hover:bg-gray-100"
                                     >
                                         ✏️
                                     </Link>
@@ -172,7 +172,7 @@ export default function TimelineView({ records }: TimelineViewProps) {
                                     <span>📍</span>
                                     <Link
                                         href={`/map?lat=${record.location.lat}&lng=${record.location.lng}`}
-                                        className="hover:text-blue-600 hover:underline cursor-pointer transition-colors"
+                                        className="hover:text-primary-600 hover:underline cursor-pointer transition-colors"
                                     >
                                         {record.location.lat.toFixed(5)}, {record.location.lng.toFixed(5)}
                                     </Link>

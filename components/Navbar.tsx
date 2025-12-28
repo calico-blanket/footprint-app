@@ -22,13 +22,13 @@ export default function Navbar() {
         <>
             {/* Desktop Sidebar */}
             <nav className="hidden md:flex fixed top-0 left-0 h-full w-64 bg-white border-r flex-col p-4 z-50">
-                <h1 className="text-xl font-bold mb-8 text-blue-600">Footprint</h1>
+                <h1 className="text-xl font-bold mb-8 text-primary-600">Footprint</h1>
                 <div className="flex-1 space-y-2">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex items-center p-3 rounded-lg transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-600" : "text-gray-600 hover:bg-gray-50"
+                            className={`flex items-center p-3 rounded-lg transition-colors ${pathname === item.href ? "bg-primary-50 text-primary-600" : "text-gray-600 hover:bg-gray-50"
                                 }`}
                         >
                             <span className="mr-3 text-xl">{item.icon}</span>
@@ -53,7 +53,7 @@ export default function Navbar() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex flex-col items-center p-2 rounded-lg ${pathname === item.href ? "text-blue-600" : "text-gray-500"} ${isNew ? "bg-blue-600 text-white -mt-6 rounded-full h-14 w-14 justify-center shadow-lg border-4 border-gray-50" : ""}`}
+                            className={`flex flex-col items-center p-2 rounded-lg ${pathname === item.href ? "text-primary-600" : "text-gray-500"} ${isNew ? "bg-primary-400 text-white -mt-6 rounded-full h-14 w-14 justify-center shadow-lg border-4 border-gray-50" : ""}`}
                         >
                             <span className={`${isNew ? "text-2xl" : "text-2xl mb-1"}`}>{item.icon}</span>
                             {!isNew && <span className="text-xs font-medium">{item.name}</span>}

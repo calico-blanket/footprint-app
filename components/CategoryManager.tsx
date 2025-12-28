@@ -184,7 +184,7 @@ export default function CategoryManager() {
                                 onChange={(e) => setNewCategory(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                                 placeholder="例: 🎨 アート"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-300"
                             />
                             <div className="flex items-center gap-2">
                                 <input
@@ -192,7 +192,7 @@ export default function CategoryManager() {
                                     id="showOnMap"
                                     checked={showOnMap}
                                     onChange={(e) => setShowOnMap(e.target.checked)}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-primary-600 focus:ring-primary-300 border-gray-300 rounded"
                                 />
                                 <label htmlFor="showOnMap" className="text-sm text-gray-700 cursor-pointer select-none">
                                     マップに表示する
@@ -201,7 +201,7 @@ export default function CategoryManager() {
                         </div>
                         <button
                             onClick={handleAdd}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            className="px-4 py-2 bg-primary-400 text-white rounded-md hover:bg-primary-500"
                         >
                             追加
                         </button>

@@ -103,7 +103,7 @@ export default function MapView({ records, centerLocation, autoFit = false }: Ma
                             )}
                             <Link
                                 href={`/records/${record.id}`}
-                                className="text-blue-600 text-sm hover:underline"
+                                className="text-primary-600 text-sm hover:underline"
                             >
                                 Edit / Details
                             </Link>

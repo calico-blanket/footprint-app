@@ -10,6 +10,21 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Dusty Pink Palette */
+  --color-primary-50: #fdf4f3;
+  --color-primary-100: #fbe6e4;
+  --color-primary-200: #f7d2ce;
+  --color-primary-300: #f0b3ac;
+  --color-primary-400: #e68d85; /* Main Brand Color D68C85 approx */
+  --color-primary-500: #d66c61;
+  --color-primary-600: #bf4d41;
+  --color-primary-700: #a0392f;
+  --color-primary-800: #85332b;
+  --color-primary-900: #6f2e28;
+  --color-primary-950: #3b1411;
+  
+  --color-primary: var(--color-primary-400); /* Adjusted to match user choice lightness */
 }
 
 @media (prefers-color-scheme: dark) {

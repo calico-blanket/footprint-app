@@ -63,7 +63,7 @@ export default function MapSearch({ records, onSelectLocation }: MapSearchProps)
                     onFocus={() => {
                         if (query.trim().length > 0) setIsOpen(true);
                     }}
-                    className="w-full px-4 py-2 pl-10 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-2 pl-10 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,7 +101,7 @@ export default function MapSearch({ records, onSelectLocation }: MapSearchProps)
                                 <div className="flex gap-2 text-xs text-gray-500">
                                     <span>{new Date(record.date.toDate()).toLocaleDateString()}</span>
                                     {record.tags && record.tags.length > 0 && (
-                                        <span className="text-blue-500">#{record.tags[0]}</span>
+                                        <span className="text-primary-400">#{record.tags[0]}</span>
                                     )}
                                 </div>
                             </div>

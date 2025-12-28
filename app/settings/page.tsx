@@ -12,7 +12,7 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-4">
                     <Link
                         href="/"
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-primary-600 hover:text-primary-800"
                     >
                         ← 戻る
                     </Link>

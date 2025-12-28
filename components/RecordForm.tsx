@@ -335,7 +335,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                         accept="image/*"
                         multiple
                         onChange={handleFileChange}
-                        className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                     />
                     <div className="mt-2 flex gap-2 overflow-x-auto">
                         {previews.map((src, i) => (
@@ -379,7 +379,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-300 focus:border-primary-400"
                     >
                         {categories.map((cat) => (
                             <option key={cat} value={cat}>
@@ -460,7 +460,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                                         }, 200);
                                     }}
                                     placeholder="タグを入力してEnter（カンマ区切りで複数可）"
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 pr-10 border text-gray-900"
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 sm:text-sm p-2 pr-10 border text-gray-900"
                                 />
                                 <button
                                     type="button"
@@ -495,7 +495,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                                                     setSelectedSuggestionIndex(-1);
                                                 }}
                                                 className={`px-3 py-2 cursor-pointer ${index === selectedSuggestionIndex
-                                                    ? 'bg-blue-100 text-blue-900'
+                                                    ? 'bg-primary-100 text-primary-900'
                                                     : 'hover:bg-gray-100'
                                                     }`}
                                             >
@@ -526,12 +526,12 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                         {tags.map((tag) => (
-                            <span key={tag} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <span key={tag} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                                 {tag}
                                 <button
                                     type="button"
                                     onClick={() => setTags(tags.filter((t) => t !== tag))}
-                                    className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:outline-none"
+                                    className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-primary-400 hover:bg-primary-200 hover:text-primary-500 focus:outline-none"
                                 >
                                     ×
                                 </button>
@@ -546,7 +546,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                         type="datetime-local"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 sm:text-sm p-2 border text-gray-900"
                     />
                 </div>
 
@@ -558,7 +558,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                             step="any"
                             value={location?.lat || ""}
                             onChange={(e) => setLocation(prev => ({ ...prev!, lat: parseFloat(e.target.value) }))}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 sm:text-sm p-2 border text-gray-900"
                             required
                         />
                     </div>
@@ -569,7 +569,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                             step="any"
                             value={location?.lng || ""}
                             onChange={(e) => setLocation(prev => ({ ...prev!, lng: parseFloat(e.target.value) }))}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 sm:text-sm p-2 border text-gray-900"
                             required
                         />
                     </div>
@@ -592,7 +592,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                             toast.error("お使いのブラウザは位置情報をサポートしていません");
                         }
                     }}
-                    className="w-full py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="w-full py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-300"
                 >
                     📍 現在地を取得
                 </button>
@@ -603,7 +603,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                         value={memo}
                         onChange={(e) => setMemo(e.target.value)}
                         rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-400 focus:ring-primary-300 sm:text-sm p-2 border text-gray-900"
                     />
                 </div>
 
@@ -621,7 +621,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                        className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-300 disabled:opacity-50"
                     >
                         {loading ? "保存中..." : initialData ? "更新" : "保存"}
                     </button>
