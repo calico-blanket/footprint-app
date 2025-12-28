@@ -57,19 +57,23 @@ export default function StatsPage() {
     // Unique locations (approximate - within 0.01 degree)
     const locationSet = new Set<string>();
     records.forEach(r => {
-        const key = `${r.location.lat.toFixed(2)},${r.location.lng.toFixed(2)}`;
-        locationSet.add(key);
+        if (r.location && typeof r.location.lat === 'number') {
+            const key = `${r.location.lat.toFixed(2)},${r.location.lng.toFixed(2)}`;
+            locationSet.add(key);
+        }
     });
     const uniqueLocations = locationSet.size;
 
     // Most visited locations
     const locationCount: Record<string, { count: number; lat: number; lng: number }> = {};
     records.forEach(r => {
-        const key = `${r.location.lat.toFixed(2)},${r.location.lng.toFixed(2)}`;
-        if (!locationCount[key]) {
-            locationCount[key] = { count: 0, lat: r.location.lat, lng: r.location.lng };
+        if (r.location && typeof r.location.lat === 'number') {
+            const key = `${r.location.lat.toFixed(2)},${r.location.lng.toFixed(2)}`;
+            if (!locationCount[key]) {
+                locationCount[key] = { count: 0, lat: r.location.lat, lng: r.location.lng };
+            }
+            locationCount[key].count++;
         }
-        locationCount[key].count++;
     });
     const topLocations = Object.entries(locationCount)
         .sort((a, b) => b[1].count - a[1].count)
