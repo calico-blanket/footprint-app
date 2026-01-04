@@ -1,9 +1,42 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+// Debug state
+const [debugLog, setDebugLog] = useState<string>("");
+
+// ... (existing code)
+
+const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+        // ...
+        for (const file of newFilesArray) {
+            try {
+                // Extract EXIF for Debug
+                const rawOutput = await getExifData(file); // This calls our wrapper
+                setDebugLog(prev => prev + `\n--- File: ${file.name} ---\n` + JSON.stringify(rawOutput, null, 2));
+
+                const exif = await getExifData(file);
+                // ...
+            }
+            }
+    }
+};
+
+// ... inside return ...
+<form ...>
+    {/* ... other fields ... */}
+
+    {/* Debug Output Area */}
+    <details className="mt-6 p-4 bg-gray-100 rounded-md border border-gray-300">
+        <summary className="text-xs font-bold text-gray-500 cursor-pointer">開発者用デバッグ情報 (タップして展開)</summary>
+        <pre className="mt-2 text-[10px] whitespace-pre-wrap overflow-x-auto font-mono text-gray-700">
+            {debugLog || "ここに写真の解析結果が表示されます..."}
+        </pre>
+    </details>
+</form>
 import { useAuth } from "@/components/AuthProvider";
 import { compressImage } from "@/lib/compression";
 import { getExifData } from "@/lib/exif";
+import exifr from "exifr";
 import { uploadImage, deleteImage } from "@/lib/storage";
 import { Timestamp, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs } from "firebase/firestore";
 import { getUserRecordsCollection } from "@/lib/firestore";
@@ -37,6 +70,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
     const [newFiles, setNewFiles] = useState<File[]>([]);
     // Previews are combined from existing images and new files
     const [previews, setPreviews] = useState<string[]>([]);
+    const [debugLog, setDebugLog] = useState<string>("");
 
     useEffect(() => {
         const newFilePreviews = newFiles.map(file => URL.createObjectURL(file));
@@ -144,6 +178,14 @@ export default function RecordForm({ initialData }: RecordFormProps) {
 
             for (const file of newFilesArray) {
                 try {
+                    // Debug: Raw EXIF
+                    try {
+                        const raw = await exifr.parse(file);
+                        setDebugLog(prev => prev + `\n[${file.name}]\n` + JSON.stringify(raw, null, 2) + "\n");
+                    } catch (e) {
+                        setDebugLog(prev => prev + `\n[${file.name}] Error: ` + String(e) + "\n");
+                    }
+
                     // Extract EXIF from original file
                     const exif = await getExifData(file);
                     if (exif) {
@@ -627,6 +669,13 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     </button>
                 </div>
             </form>
+
+            <details className="mt-4 p-4 bg-gray-100 rounded text-xs border border-gray-300">
+                <summary className="font-bold cursor-pointer text-gray-700">開発用デバッグログ (EXIF解析結果)</summary>
+                <div className="mt-2 text-gray-800 whitespace-pre-wrap font-mono max-h-60 overflow-y-auto">
+                    {debugLog || "ここに写真のデータが表示されます..."}
+                </div>
+            </details>
         </>
     );
 }
