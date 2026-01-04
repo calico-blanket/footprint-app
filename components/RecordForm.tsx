@@ -1,38 +1,7 @@
 "use client";
 
-// Debug state
-const [debugLog, setDebugLog] = useState<string>("");
 
-// ... (existing code)
-
-const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-        // ...
-        for (const file of newFilesArray) {
-            try {
-                // Extract EXIF for Debug
-                const rawOutput = await getExifData(file); // This calls our wrapper
-                setDebugLog(prev => prev + `\n--- File: ${file.name} ---\n` + JSON.stringify(rawOutput, null, 2));
-
-                const exif = await getExifData(file);
-                // ...
-            }
-            }
-    }
-};
-
-// ... inside return ...
-<form ...>
-    {/* ... other fields ... */}
-
-    {/* Debug Output Area */}
-    <details className="mt-6 p-4 bg-gray-100 rounded-md border border-gray-300">
-        <summary className="text-xs font-bold text-gray-500 cursor-pointer">開発者用デバッグ情報 (タップして展開)</summary>
-        <pre className="mt-2 text-[10px] whitespace-pre-wrap overflow-x-auto font-mono text-gray-700">
-            {debugLog || "ここに写真の解析結果が表示されます..."}
-        </pre>
-    </details>
-</form>
+import { useState, useEffect, ChangeEvent } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { compressImage } from "@/lib/compression";
 import { getExifData } from "@/lib/exif";
