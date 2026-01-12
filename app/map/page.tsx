@@ -89,9 +89,47 @@ function MapContent() {
         }
     }, [user]);
 
-    // ... (existing handleFilterChange)
+    const handleFilterChange = (filters: FilterState) => {
+        let result = allRecords;
 
-    // ... (existing handleLocationSelect)
+        // Date range filter
+        if (filters.startDate) {
+            result = result.filter(r => r.date.toDate() >= new Date(filters.startDate));
+        }
+        if (filters.endDate) {
+            const endOfDay = new Date(filters.endDate);
+            endOfDay.setHours(23, 59, 59, 999);
+            result = result.filter(r => r.date.toDate() <= endOfDay);
+        }
+
+        // Category filter
+        if (filters.category && filters.category !== "All") {
+            result = result.filter(r => r.category === filters.category);
+        }
+
+        // Tag filter
+        if (filters.tag) {
+            result = result.filter(r => r.tags && r.tags.includes(filters.tag));
+        }
+
+        // Keyword search
+        if (filters.keyword) {
+            const query = filters.keyword.toLowerCase();
+            result = result.filter(r =>
+                r.memo.toLowerCase().includes(query) ||
+                (r.tags && r.tags.some(t => t.toLowerCase().includes(query))) ||
+                r.category.toLowerCase().includes(query)
+            );
+        }
+
+        setFilteredRecords(result);
+        setShouldAutoFit(true);
+    };
+
+    const handleLocationSelect = (lat: number, lng: number) => {
+        setCenterLocation({ lat, lng });
+        setShouldAutoFit(false);
+    };
 
     if (loading) return <LoadingSpinner />;
 
