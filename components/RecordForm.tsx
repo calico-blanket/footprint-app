@@ -5,7 +5,6 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { compressImage } from "@/lib/compression";
 import { getExifData } from "@/lib/exif";
-import exifr from "exifr";
 import { uploadImage, deleteImage } from "@/lib/storage";
 import { Timestamp, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs } from "firebase/firestore";
 import { getUserRecordsCollection } from "@/lib/firestore";
@@ -39,7 +38,6 @@ export default function RecordForm({ initialData }: RecordFormProps) {
     const [newFiles, setNewFiles] = useState<File[]>([]);
     // Previews are combined from existing images and new files
     const [previews, setPreviews] = useState<string[]>([]);
-    const [debugLog, setDebugLog] = useState<string>("");
 
     useEffect(() => {
         const newFilePreviews = newFiles.map(file => URL.createObjectURL(file));
@@ -147,14 +145,6 @@ export default function RecordForm({ initialData }: RecordFormProps) {
 
             for (const file of newFilesArray) {
                 try {
-                    // Debug: Raw EXIF
-                    try {
-                        const raw = await exifr.parse(file);
-                        setDebugLog(prev => prev + `\n[${file.name}]\n` + JSON.stringify(raw, null, 2) + "\n");
-                    } catch (e) {
-                        setDebugLog(prev => prev + `\n[${file.name}] Error: ` + String(e) + "\n");
-                    }
-
                     // Extract EXIF from original file
                     const exif = await getExifData(file);
                     if (exif) {
@@ -638,13 +628,6 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     </button>
                 </div>
             </form>
-
-            <details className="mt-4 p-4 bg-gray-100 rounded text-xs border border-gray-300">
-                <summary className="font-bold cursor-pointer text-gray-700">開発用デバッグログ (EXIF解析結果)</summary>
-                <div className="mt-2 text-gray-800 whitespace-pre-wrap font-mono max-h-60 overflow-y-auto">
-                    {debugLog || "ここに写真のデータが表示されます..."}
-                </div>
-            </details>
         </>
     );
 }
