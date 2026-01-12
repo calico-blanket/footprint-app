@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { Record } from "@/lib/types";
 import L from "leaflet";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Fix Leaflet default icon issue
 const icon = L.icon({
@@ -20,12 +20,13 @@ const icon = L.icon({
 // Component to update map center when centerLocation changes
 function SetViewOnChange({ center }: { center: [number, number] }) {
     const map = useMap();
+    const [lat, lng] = center;
     useEffect(() => {
         // Use flyTo for smoother animation when searching/centering
-        map.flyTo(center, 16, {
+        map.flyTo([lat, lng], 16, {
             duration: 1.5
         });
-    }, [center, map]);
+    }, [lat, lng, map]);
     return null;
 }
 
@@ -55,19 +56,66 @@ interface MapViewProps {
 }
 
 export default function MapView({ records, centerLocation, autoFit = false }: MapViewProps) {
-    // Filter out "家事" category records from map display is now handled in parent component
-    // Filter out "家事" category records from map display is now handled in parent component
-    // Also ensure records have valid location data
+    // Filter and validate records
     const displayRecords = records.filter(r => r.location && typeof r.location.lat === 'number' && typeof r.location.lng === 'number');
 
+    // State to track which record index is "on top" for each location group
+    const [topRecordIndices, setTopRecordIndices] = useState<{ [key: string]: number }>({});
+
     // Use centerLocation if provided, otherwise use first record or default to Tokyo
-    // Note: Initial center is less important if we use Geolocation in parent, but good fallback
     const defaultCenter: [number, number] = [35.6895, 139.6917];
     const center = centerLocation
         ? [centerLocation.lat, centerLocation.lng] as [number, number]
         : displayRecords.length > 0
             ? [displayRecords[0].location.lat, displayRecords[0].location.lng] as [number, number]
             : defaultCenter;
+
+    // Proximity Grouping Logic
+    // Threshold in degrees. Approx 0.00005 is roughly 5 meters.
+    const PROXIMITY_THRESHOLD = 0.00005;
+
+    // Map record ID to its "visual" location (group center)
+    const recordVisualLocations: { [id: string]: { lat: number, lng: number } } = {};
+    // Keep track of group keys to reuse collision logic
+    const visualKeys: { [id: string]: string } = {};
+
+    // Independent groups for visual clustering
+    const visualGroups: { lat: number, lng: number, id: string }[] = [];
+
+    displayRecords.forEach(record => {
+        // Find if this record belongs to an existing visual group
+        let assignedGroup = visualGroups.find(g =>
+            Math.abs(g.lat - record.location.lat) < PROXIMITY_THRESHOLD &&
+            Math.abs(g.lng - record.location.lng) < PROXIMITY_THRESHOLD
+        );
+
+        if (!assignedGroup) {
+            // Create new group centered on this record
+            assignedGroup = {
+                lat: record.location.lat,
+                lng: record.location.lng,
+                id: `${record.location.lat}_${record.location.lng}` // Base ID
+            };
+            visualGroups.push(assignedGroup);
+        }
+
+        // Assign the group's location to this record
+        recordVisualLocations[record.id] = { lat: assignedGroup.lat, lng: assignedGroup.lng };
+
+        // Use the group's coordinates as the key for collision management
+        const key = `${assignedGroup.lat}_${assignedGroup.lng}`;
+        visualKeys[record.id] = key;
+    });
+
+    // Re-build collision groups based on VISUAL locations
+    const collisionGroups: { [key: string]: string[] } = {};
+    displayRecords.forEach(record => {
+        const key = visualKeys[record.id];
+        if (!collisionGroups[key]) {
+            collisionGroups[key] = [];
+        }
+        collisionGroups[key].push(record.id);
+    });
 
     return (
         <MapContainer center={center} zoom={centerLocation ? 15 : 13} style={{ height: "100%", width: "100%" }}>
@@ -77,45 +125,75 @@ export default function MapView({ records, centerLocation, autoFit = false }: Ma
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {displayRecords.map((record) => (
-                <Marker
-                    key={record.id}
-                    position={[record.location.lat, record.location.lng]}
-                    icon={icon}
-                >
-                    <Popup>
-                        <div className="w-48">
-                            {record.imageUrls.length > 0 && (
-                                <img
-                                    src={record.imageUrls[0]}
-                                    alt="Thumbnail"
-                                    className="w-full h-32 object-cover rounded mb-2"
-                                />
-                            )}
-                            <p className="text-sm font-bold mb-1">{record.category}</p>
-                            <p className="text-xs text-gray-600 mb-2">
-                                {new Date(record.date.toDate()).toLocaleDateString()} {new Date(record.date.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                            <p className="text-sm line-clamp-2 mb-2">{record.memo}</p>
-                            {record.tags && record.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mb-2">
-                                    {record.tags.map(tag => (
-                                        <span key={tag} className="inline-block px-1.5 py-0.5 text-[10px] bg-gray-100 text-gray-600 rounded-full">
-                                            #{tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-                            <Link
-                                href={`/records/${record.id}`}
-                                className="text-primary-600 text-sm hover:underline"
-                            >
-                                Edit / Details
-                            </Link>
-                        </div>
-                    </Popup>
-                </Marker>
-            ))}
+            {displayRecords.map((record) => {
+                const visibleLoc = recordVisualLocations[record.id];
+                const key = visualKeys[record.id];
+                const group = collisionGroups[key];
+                const currentIndex = topRecordIndices[key] || 0;
+
+                // Determine if this record is currently the "top" one in its group
+                // If it's a solo record, it's always top.
+                // If it's in a group, it matches the current index.
+                const isTop = group.length === 1 || group[currentIndex % group.length] === record.id;
+
+                return (
+                    <Marker
+                        key={record.id}
+                        position={[visibleLoc.lat, visibleLoc.lng]} // Use VISUAL location (snapped)
+                        icon={icon}
+                        zIndexOffset={isTop ? 1000 : 0} // Bring active record to front
+                        eventHandlers={{
+                            click: () => {
+                                // Cycle to the next record in the group if multiple exist
+                                if (group.length > 1) {
+                                    setTopRecordIndices(prev => ({
+                                        ...prev,
+                                        [key]: (currentIndex + 1) % group.length
+                                    }));
+                                }
+                            }
+                        }}
+                    >
+                        <Popup>
+                            <div className="w-48">
+                                {group.length > 1 && (
+                                    <div className="mb-2 px-2 py-1 bg-gray-100 rounded text-xs text-secondary-600 text-center font-medium">
+                                        重なり: {(currentIndex % group.length) + 1} / {group.length}
+                                        <div className="text-[10px] text-gray-400 font-normal">ピンをクリックで切替</div>
+                                    </div>
+                                )}
+                                {record.imageUrls.length > 0 && (
+                                    <img
+                                        src={record.imageUrls[0]}
+                                        alt="Thumbnail"
+                                        className="w-full h-32 object-cover rounded mb-2"
+                                    />
+                                )}
+                                <p className="text-sm font-bold mb-1">{record.category}</p>
+                                <p className="text-xs text-gray-600 mb-2">
+                                    {new Date(record.date.toDate()).toLocaleDateString()} {new Date(record.date.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                                <p className="text-sm line-clamp-2 mb-2">{record.memo}</p>
+                                {record.tags && record.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mb-2">
+                                        {record.tags.map(tag => (
+                                            <span key={tag} className="inline-block px-1.5 py-0.5 text-[10px] bg-gray-100 text-gray-600 rounded-full">
+                                                #{tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                                <Link
+                                    href={`/records/${record.id}`}
+                                    className="text-primary-600 text-sm hover:underline"
+                                >
+                                    詳細 / 編集
+                                </Link>
+                            </div>
+                        </Popup>
+                    </Marker>
+                );
+            })}
         </MapContainer>
     );
 }
