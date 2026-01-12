@@ -83,5 +83,8 @@ npm run dev
 ## 🔒 プライバシー
 このアプリは「自分用」または「招待制」を想定しており、Google認証によって許可されたユーザーのみがデータにアクセスできます。データはFirestoreセキュリティルールによって厳格に保護されています。
 
+## 📜 開発履歴
+詳細な開発の経緯や更新履歴については [PROGRESS.md](PROGRESS.md) をご覧ください。
+
 ## 📄 License
 [MIT License](LICENSE) © 2025-2026 猫柄毛布 (calico-blanket)
