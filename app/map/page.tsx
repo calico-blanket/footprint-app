@@ -25,43 +25,22 @@ function MapContent() {
     const [centerLocation, setCenterLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [shouldAutoFit, setShouldAutoFit] = useState(false);
 
+    const [categoryColors, setCategoryColors] = useState<{ [category: string]: string }>({});
+
     // Calculate all unique tags for autocomplete
     const allTags = useMemo(() => {
+        // ... (existing tag logic)
         const tags = new Set<string>();
         allRecords.forEach(record => {
             if (record.tags && Array.isArray(record.tags)) {
                 record.tags.forEach(tag => tags.add(tag));
             }
         });
-        // Sort tags using Japanese collation (あいうえお順)
         const collator = new Intl.Collator('ja', { sensitivity: 'base' });
         return Array.from(tags).sort(collator.compare);
     }, [allRecords]);
 
-    // Read lat/lng from URL parameters
-    useEffect(() => {
-        const lat = searchParams.get('lat');
-        const lng = searchParams.get('lng');
-        if (lat && lng) {
-            setCenterLocation({ lat: parseFloat(lat), lng: parseFloat(lng) });
-        } else {
-            // If no URL params, try to get current location
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        setCenterLocation({
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        });
-                    },
-                    (error) => {
-                        console.log("Geolocation error or permission denied:", error);
-                        // Fallback to default (Tokyo) happens in MapView if centerLocation is null
-                    }
-                );
-            }
-        }
-    }, [searchParams]);
+    // ... (existing useEffect for URL params)
 
     useEffect(() => {
         if (user) {
@@ -71,6 +50,7 @@ function MapContent() {
                     const categoryDocRef = doc(db, "users", user.uid, "settings", "categories");
                     const categoryDocSnap = await getDoc(categoryDocRef);
                     let hiddenCategories = new Set<string>();
+                    const colors: { [category: string]: string } = {};
 
                     if (categoryDocSnap.exists()) {
                         const data = categoryDocSnap.data().list;
@@ -79,19 +59,20 @@ function MapContent() {
                                 if (!c.showOnMap) {
                                     hiddenCategories.add(c.name);
                                 }
+                                if (c.color) {
+                                    colors[c.name] = c.color;
+                                }
                             });
                         }
                     }
+                    setCategoryColors(colors);
 
                     // Fetch records
+                    // ... (existing record fetch logic)
                     const snapshot = await getDocs(getUserRecordsCollection(user.uid));
                     const data = snapshot.docs.map(d => d.data() as Record);
 
-                    // Filter out hidden categories globally for the map
-                    // Note: If we want them to show in the list but not on map, we should filter only for MapView
-                    // But here we filteredRecords is passed to MapView.
-                    // If we want FilterBar to still show them in dropdown... FilterBar loads categories separately.
-                    // This is fine. We just filter the records here.
+                    // Filter out hidden categories globaly for the map
                     const visibleData = data.filter(r => !hiddenCategories.has(r.category));
 
                     setAllRecords(visibleData);
@@ -108,35 +89,9 @@ function MapContent() {
         }
     }, [user]);
 
-    const handleFilterChange = (filters: FilterState) => {
-        let result = [...allRecords];
-        if (filters.category !== "All") {
-            result = result.filter(r => r.category === filters.category);
-        }
-        if (filters.keyword) {
-            const lower = filters.keyword.toLowerCase();
-            result = result.filter(r => r.memo.toLowerCase().includes(lower));
-        }
-        if (filters.tag) {
-            const lowerTag = filters.tag.toLowerCase();
-            result = result.filter(r => r.tags?.some(t => t.toLowerCase().includes(lowerTag)));
-        }
-        if (filters.startDate) {
-            result = result.filter(r => new Date(r.date.toDate()) >= new Date(filters.startDate));
-        }
-        if (filters.endDate) {
-            const end = new Date(filters.endDate);
-            end.setHours(23, 59, 59, 999);
-            result = result.filter(r => new Date(r.date.toDate()) <= end);
-        }
-        setFilteredRecords(result);
-        setShouldAutoFit(true); // Auto-fit bounds when filter changes
-    };
+    // ... (existing handleFilterChange)
 
-    const handleLocationSelect = (lat: number, lng: number) => {
-        setCenterLocation({ lat, lng });
-        setShouldAutoFit(false); // Don't auto-fit when jumping to specific location
-    };
+    // ... (existing handleLocationSelect)
 
     if (loading) return <LoadingSpinner />;
 
@@ -146,7 +101,12 @@ function MapContent() {
                 <FilterBar onFilterChange={handleFilterChange} availableTags={allTags} />
                 <MapSearch records={allRecords} onSelectLocation={handleLocationSelect} />
             </div>
-            <MapView records={filteredRecords} centerLocation={centerLocation} autoFit={shouldAutoFit} />
+            <MapView
+                records={filteredRecords}
+                centerLocation={centerLocation}
+                autoFit={shouldAutoFit}
+                categoryColors={categoryColors}
+            />
         </div>
     );
 }

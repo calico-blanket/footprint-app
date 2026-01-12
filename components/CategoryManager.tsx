@@ -23,13 +23,30 @@ export const DEFAULT_CATEGORY_ITEMS: CategoryItem[] = DEFAULT_CATEGORIES.map(nam
     showOnMap: true
 }));
 
+// Preset colors for pins (Tailwind-ish compatible hex codes)
+const PRESET_COLORS = [
+    "#3B82F6", // Blue (Default)
+    "#EF4444", // Red
+    "#F59E0B", // Amber
+    "#10B981", // Emerald
+    "#8B5CF6", // Violet
+    "#EC4899", // Pink
+    "#6366F1", // Indigo
+    "#14B8A6", // Teal
+    "#F97316", // Orange
+    "#6B7280", // Gray
+];
+
 export default function CategoryManager() {
     const { user } = useAuth();
     const [categories, setCategories] = useState<CategoryItem[]>(DEFAULT_CATEGORY_ITEMS);
     const [newCategory, setNewCategory] = useState("");
+    const [newColor, setNewColor] = useState(PRESET_COLORS[0]);
     const [showOnMap, setShowOnMap] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // ... (useEffect and loadCategories remain same)
 
     useEffect(() => {
         if (user) {
@@ -46,11 +63,10 @@ export default function CategoryManager() {
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const data = docSnap.data().list;
-                // Handle backward compatibility: check if data is string[] or CategoryItem[]
                 if (Array.isArray(data) && data.length > 0) {
                     if (typeof data[0] === 'string') {
-                        // Upgrade legacy string array to CategoryItem array
-                        setCategories(data.map((name: string) => ({ name, showOnMap: true })));
+                        // Upgrade legacy string array
+                        setCategories(data.map((name: string) => ({ name, showOnMap: true, color: PRESET_COLORS[0] })));
                     } else {
                         setCategories(data as CategoryItem[]);
                     }
@@ -91,10 +107,21 @@ export default function CategoryManager() {
             toast.error("同じカテゴリーが既に存在します");
             return;
         }
-        const updated = [...categories, { name: newCategory.trim(), showOnMap }];
+        const updated = [...categories, {
+            name: newCategory.trim(),
+            showOnMap,
+            color: newColor
+        }];
         saveCategories(updated);
         setNewCategory("");
+        setNewColor(PRESET_COLORS[0]);
         setShowOnMap(true); // Reset to default
+    };
+
+    const handleColorUpdate = (index: number, color: string) => {
+        const updated = [...categories];
+        updated[index].color = color;
+        saveCategories(updated);
     };
 
     const handleDelete = (index: number) => {
@@ -130,7 +157,25 @@ export default function CategoryManager() {
                             className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
                         >
                             <div className="flex items-center gap-3">
-                                <span className="text-sm">{cat.name}</span>
+                                {/* Color Picker Dropdown for existing items */}
+                                <div className="relative group">
+                                    <button
+                                        className="w-6 h-6 rounded-full border border-gray-200 shadow-sm transition-transform hover:scale-110"
+                                        style={{ backgroundColor: cat.color || PRESET_COLORS[0] }}
+                                        title="色を変更"
+                                    />
+                                    <div className="absolute left-0 top-full mt-1 bg-white p-2 rounded shadow-xl grid grid-cols-5 gap-1 z-10 hidden group-hover:grid w-[140px] border border-gray-100">
+                                        {PRESET_COLORS.map(c => (
+                                            <button
+                                                key={c}
+                                                className="w-5 h-5 rounded-full hover:scale-125 transition-transform border border-gray-100"
+                                                style={{ backgroundColor: c }}
+                                                onClick={() => handleColorUpdate(i, c)}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                                <span className="text-sm font-medium">{cat.name}</span>
                                 <button
                                     onClick={() => {
                                         const updated = [...categories];
@@ -172,12 +217,37 @@ export default function CategoryManager() {
                 </div>
 
                 {/* Add new category */}
-                <div className="space-y-3">
+                <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
                     <label className="block text-sm font-medium text-gray-700">
                         新しいカテゴリーを追加
                     </label>
-                    <div className="flex gap-2 items-start">
-                        <div className="flex-1 space-y-2">
+                    <div className="flex gap-2 items-start flex-wrap sm:flex-nowrap">
+                        <div className="flex items-center gap-2">
+                            {/* Color Picker for new item */}
+                            <div className="relative group">
+                                <button
+                                    className="w-10 h-10 rounded-full border border-gray-300 shadow-sm flex items-center justify-center transition-transform hover:scale-105"
+                                    style={{ backgroundColor: newColor }}
+                                    title="色を選択"
+                                >
+                                    <svg className="w-4 h-4 text-white opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div className="absolute top-full left-0 mt-2 bg-white p-3 rounded-lg shadow-xl grid grid-cols-5 gap-2 z-20 hidden group-hover:grid w-[160px] border border-gray-100">
+                                    {PRESET_COLORS.map(c => (
+                                        <button
+                                            key={c}
+                                            className="w-6 h-6 rounded-full hover:scale-125 transition-transform border border-gray-100 shadow-sm"
+                                            style={{ backgroundColor: c }}
+                                            onClick={() => setNewColor(c)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 space-y-2 min-w-[200px]">
                             <input
                                 type="text"
                                 value={newCategory}
@@ -201,14 +271,11 @@ export default function CategoryManager() {
                         </div>
                         <button
                             onClick={handleAdd}
-                            className="px-4 py-2 bg-primary-400 text-white rounded-md hover:bg-primary-500"
+                            className="px-4 py-2 bg-primary-400 text-white rounded-md hover:bg-primary-500 whitespace-nowrap"
                         >
                             追加
                         </button>
                     </div>
-                    <p className="text-xs text-gray-500">
-                        💡 絵文字を使うと見やすくなります（Windowsキー + . で絵文字パネルを開けます）
-                    </p>
                 </div>
 
                 {/* Reset button */}

@@ -49,13 +49,38 @@ function AutoFitBounds({ records, active }: { records: Record[], active: boolean
     return null;
 }
 
+
 interface MapViewProps {
     records: Record[];
     centerLocation?: { lat: number; lng: number } | null;
     autoFit?: boolean;
+    categoryColors?: { [category: string]: string };
 }
 
-export default function MapView({ records, centerLocation, autoFit = false }: MapViewProps) {
+// Helper to create SVG icon HTML with custom color
+function createColorIcon(color: string) {
+    // Standard map marker shape svg
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" style="width: 25px; height: 41px; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.3));">
+            <path fill="${color}" d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 29.031-172.268 238.67-4.474 6.455-14.99 6.455-19.464 0z"/>
+            <circle cx="192" cy="192" r="80" fill="white" opacity="0.3"/> 
+        </svg>
+    `;
+
+    // Leaflet DivIcon
+    return L.divIcon({
+        className: 'custom-color-marker',
+        html: svg,
+        iconSize: [25, 41],
+        iconAnchor: [12.5, 41],
+        popupAnchor: [0, -41],
+    });
+}
+
+// Fallback blue icon (same color as PRESET_COLORS[0])
+const defaultColorIcon = createColorIcon("#3B82F6");
+
+export default function MapView({ records, centerLocation, autoFit = false, categoryColors = {} }: MapViewProps) {
     // Filter and validate records
     const displayRecords = records.filter(r => r.location && typeof r.location.lat === 'number' && typeof r.location.lng === 'number');
 
@@ -136,11 +161,15 @@ export default function MapView({ records, centerLocation, autoFit = false }: Ma
                 // If it's in a group, it matches the current index.
                 const isTop = group.length === 1 || group[currentIndex % group.length] === record.id;
 
+                // Determine icon color
+                const color = categoryColors[record.category];
+                const markerIcon = color ? createColorIcon(color) : defaultColorIcon;
+
                 return (
                     <Marker
                         key={record.id}
                         position={[visibleLoc.lat, visibleLoc.lng]} // Use VISUAL location (snapped)
-                        icon={icon}
+                        icon={markerIcon}
                         zIndexOffset={isTop ? 1000 : 0} // Bring active record to front
                         eventHandlers={{
                             click: () => {

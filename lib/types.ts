@@ -28,6 +28,7 @@ export interface UserProfile {
 export interface CategoryItem {
     name: string;
     showOnMap: boolean;
+    color?: string; // Hex color code
 }
 
 
