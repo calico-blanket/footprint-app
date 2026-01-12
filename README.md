@@ -86,9 +86,8 @@ npm run dev
 ## 📜 開発履歴と開発のきっかけ
 詳細な開発の経緯や更新履歴については [PROGRESS.md](PROGRESS.md) をご覧ください。
 
-作成に当たってはこちらの記事で当時プレビューとして公開されていた「Mikke」というアプリについての記事を読んだこと、また、そのプレビュー版を使わせていただいたことがきっかけとなりました。
+作成に当たっては[こちら](https://zenn.dev/hulk510/articles/my-first-service-mikke)の記事で当時プレビューとして公開されていた「ミッケ」というアプリについての記事を読んだこと、また、そのプレビュー版を使わせていただいたことがきっかけとなりました。
 作者のはるかさんに感謝いたします。
-https://zenn.dev/hulk510/articles/my-first-service-mikk
 
 ## 📄 License
 [MIT License](LICENSE) © 2025-2026 猫柄毛布 (calico-blanket)
