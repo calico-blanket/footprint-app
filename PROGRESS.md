@@ -378,6 +378,7 @@ NEXT_PUBLIC_ALLOWED_EMAILS=sesame0518@gmail.com
 - Vercelアカウント（デプロイ用）
 - GitHubアカウント
 
+---
 ### 初回セットアップ
 ```bash
 # リポジトリのクローン
@@ -405,7 +406,7 @@ git commit -m "Update"
 git push origin main
 
 # Vercelが自動的にデプロイ
-
+```
 ---
 
 ## 更新履歴
