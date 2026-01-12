@@ -13,8 +13,8 @@
 - **バージョン管理**: GitHub (リポジトリ: `calico-blanket/footprint-app`)
 
 **Firebase プロジェクト:**
-- プロジェクトID: `footprint-app-e48fa`
-- 認証: Google認証（メールアドレスでアクセス制限: `sesame0518@gmail.com`）
+- プロジェクトID: `dummy-app-xxxxx`
+- 認証: Google認証（メールアドレスでアクセス制限: `dummy@gmail.com`）
 
 **デプロイURL:**
 - Vercel: `https://footprint-app-[ランダム文字列].vercel.app`
@@ -405,15 +405,6 @@ git commit -m "Update"
 git push origin main
 
 # Vercelが自動的にデプロイ
-```
-
----
-
-## 連絡先・リソース
-
-- **GitHubリポジトリ**: https://github.com/calico-blanket/footprint-app
-- **Firebaseコンソール**: https://console.firebase.google.com/project/footprint-app-e48fa
-- **Vercelダッシュボード**: https://vercel.com/dashboard
 
 ---
 
