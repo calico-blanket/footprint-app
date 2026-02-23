@@ -471,6 +471,10 @@ git push origin main
     - **ビルドエラーの修正**:
         - `CategoryManager.tsx` のリファクタリング時に消失したと思われるステート（`loading`, `error`）と関数（`loadCategories`, `saveCategories`, `handleDelete`, `handleReset`）を復元。
         - Vercel でのビルド失敗（`npm run build` エラー）を解消。
+    - **写真から位置情報が取得できない問題の修正**:
+        - EXIF解析ライブラリ(`exifr`)の使い方を改善。手動でのDMS（度分秒）計算に依存せず、`exifr.gps()` 関数を利用してより確実・柔軟にGPSメタデータを抽出するように修正。
+        - 緯度経度のリファレンス（N/S/E/W）にも対応し、南半球・西半球での記録ズレを防止。
 
-**最終更新**: 2026-02-23 18:00
+**最終更新**: 2026-02-23 18:15
+
 
