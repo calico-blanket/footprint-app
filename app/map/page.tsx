@@ -53,7 +53,7 @@ function MapContent() {
                     const colors: { [category: string]: string } = {};
 
                     if (categoryDocSnap.exists()) {
-                        const data = categoryDocSnap.data().list;
+                        const data = categoryDocSnap.data().items || categoryDocSnap.data().list;
                         if (Array.isArray(data) && data.length > 0 && typeof data[0] !== 'string') {
                             (data as CategoryItem[]).forEach(c => {
                                 if (!c.showOnMap) {

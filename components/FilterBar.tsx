@@ -45,7 +45,7 @@ export default function FilterBar({ onFilterChange, availableTags = [] }: Filter
                     const docRef = doc(db, "users", user.uid, "settings", "categories");
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        const data = docSnap.data().list;
+                        const data = docSnap.data().items || docSnap.data().list;
                         let customCategoryNames: string[] = [];
 
                         if (Array.isArray(data) && data.length > 0) {

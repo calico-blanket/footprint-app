@@ -75,7 +75,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     const docRef = doc(db, "users", user.uid, "settings", "categories");
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        const data = docSnap.data().list;
+                        const data = docSnap.data().items || docSnap.data().list;
                         let loadedCategories: string[] = DEFAULT_CATEGORIES;
 
                         if (Array.isArray(data) && data.length > 0) {
