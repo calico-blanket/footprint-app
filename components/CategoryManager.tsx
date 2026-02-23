@@ -44,6 +44,8 @@ export default function CategoryManager() {
     const [newColor, setNewColor] = useState(PRESET_COLORS[0]);
     const [showOnMap, setShowOnMap] = useState(true);
     const [activeColorPicker, setActiveColorPicker] = useState<number | 'new' | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // Close color picker when clicking outside
     useEffect(() => {
@@ -55,7 +57,48 @@ export default function CategoryManager() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // ... (loadCategories, saveCategories, etc. remain same)
+    // Load categories from Firestore
+    useEffect(() => {
+        if (!user) {
+            setLoading(false);
+            return;
+        }
+
+        const loadCategories = async () => {
+            try {
+                const docRef = doc(db, "users", user.uid, "settings", "categories");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    setCategories(docSnap.data().items || DEFAULT_CATEGORY_ITEMS);
+                } else {
+                    setCategories(DEFAULT_CATEGORY_ITEMS);
+                }
+            } catch (err) {
+                console.error("Error loading categories:", err);
+                setError("カテゴリーの読み込みに失敗しました。");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadCategories();
+    }, [user]);
+
+
+
+    const saveCategories = async (updated: CategoryItem[]) => {
+        if (!user) return;
+
+        try {
+            setCategories(updated);
+            const docRef = doc(db, "users", user.uid, "settings", "categories");
+            await setDoc(docRef, { items: updated });
+        } catch (err) {
+            console.error("Error saving categories:", err);
+            toast.error("保存に失敗しました。");
+        }
+    };
 
     const handleAdd = () => {
         if (!newCategory.trim()) {
@@ -85,7 +128,16 @@ export default function CategoryManager() {
         setActiveColorPicker(null);
     };
 
-    // ... (handleDelete, handleReset remain same)
+    const handleDelete = (index: number) => {
+        if (!confirm("このカテゴリーを削除しますか？")) return;
+        const updated = categories.filter((_, i) => i !== index);
+        saveCategories(updated);
+    };
+
+    const handleReset = async () => {
+        if (!confirm("すべてのカテゴリーをデフォルトに戻しますか？（カスタム設定は失われます）")) return;
+        saveCategories(DEFAULT_CATEGORY_ITEMS);
+    };
 
     if (loading) {
         return <div className="p-4">読み込み中...</div>;
