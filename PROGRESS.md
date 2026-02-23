@@ -467,4 +467,10 @@ git push origin main
 
 ---
 
-**最終更新**: 2026-01-12 22:15
+- **2026-02-23**:
+    - **ビルドエラーの修正**:
+        - `CategoryManager.tsx` のリファクタリング時に消失したと思われるステート（`loading`, `error`）と関数（`loadCategories`, `saveCategories`, `handleDelete`, `handleReset`）を復元。
+        - Vercel でのビルド失敗（`npm run build` エラー）を解消。
+
+**最終更新**: 2026-02-23 18:00
+
