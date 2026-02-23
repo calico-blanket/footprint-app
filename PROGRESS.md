@@ -467,18 +467,58 @@ git push origin main
 
 ---
 
-- **2026-02-23**:
+- **2026-02-23〜24（今回のセッション）**:
     - **ビルドエラーの修正**:
         - `CategoryManager.tsx` のリファクタリング時に消失したと思われるステート（`loading`, `error`）と関数（`loadCategories`, `saveCategories`, `handleDelete`, `handleReset`）を復元。
-        - Vercel でのビルド失敗（`npm run build` エラー）を解消。
-    - **写真から位置情報が取得できない問題の修正**:
-        - EXIF解析ライブラリ(`exifr`)の使い方を改善。手動でのDMS（度分秒）計算に依存せず、`exifr.gps()` 関数を利用してより確実・柔軟にGPSメタデータを抽出するように修正。
-        - 緯度経度のリファレンス（N/S/E/W）にも対応し、南半球・西半球での記録ズレを防止。
-    - **マップにピンが表示されない問題の修正**:
-        - カスタムカテゴリーの保存形式を変更した際、保存キー名が `list` から `items` に変わっていたため、マップ画面（`app/map/page.tsx`）やレコード作成画面（`RecordForm.tsx`）で設定を読み込めず、全録画が非表示扱いになっていた問題を修正。（`items || list` の両方に対応）
-    - **Androidの写真アップロード時のEXIF削除問題の回避**:
-        - Androidの新しい「写真ピッカー（Android Photo Picker）」がプライバシー保護のために自動でGPS情報を削除してしまう問題への対策として、ファイル選択（`input type="file"`）の `accept` 属性を `image/*` から特定の拡張子（`image/jpeg, .jpg`など）へ厳格化。これにより、レガシーなファイルピッカーが開くように誘導し、位置情報付きの元画像をアップロードできるように改善。
+        - Vercel でのビルド失敗（`npm run build` エラー）を解消し、デプロイ成功を確認。
+    - **写真から位置情報が取得できない問題の修正（`lib/exif.ts`）**:
+        - 手動のDMS（度分秒→10進変換）に頼らず、`exifr.gps()` という専用の公式APIを使うように変更。
+        - 配列の長さが3以外でも緯度経度を正しく計算できるよう、DMS変換関数を柔軟化（`dms.length >= 1` に変更）。
+        - 緯度経度のリファレンス（南緯`S`・西経`W`の際のマイナス符号処理）を追加。
+        - エラー発生時にエラーメッセージ文字列を返すよう改善（デバッグしやすさ向上）。
+    - **マップにピンが表示されない問題を修正（キー名不一致）**:
+        - カテゴリー設定のFirestore保存キーが `list` → `items` に変わったことで、マップ表示（`app/map/page.tsx`）・レコード新規作成（`components/RecordForm.tsx`）・フィルターバー（`components/FilterBar.tsx`）の3ファイルで設定が読み込めなくなっていた問題を修正。
+        - `docSnap.data().items || docSnap.data().list` として新旧両方のキー名に対応。
+    - **GPS不在時の警告表示の追加（`components/RecordForm.tsx`）**:
+        - 写真にGPS情報が含まれていない場合、「写真に位置情報(GPS)が含まれていません。端末の現在地を使用します。」というトースト警告を出すように追加。
+    - **Androidの写真ピッカー（Photo Picker）によるGPS削除問題への回避策（部分対応）**:
+        - `input[type="file"]` の `accept` 属性を `image/*` から `image/jpeg, image/png, image/heic, .jpg, .jpeg, .png, .heic` に変更し、Androidがレガシーファイルピッカーを起動するよう誘導を試みた。
+        - **結果：効果なし。** Pixel 9a + Android最新版では、`accept` 属性の値に関わらず強制的に写真ピッカー（Googleフォト連携のピッカーUI）が起動し、この画面に渡されたファイルはOSによってEXIF位置情報が削除されてしまう。
 
-**最終更新**: 2026-02-24 03:08
+---
+
+## ⚠️ 未解決・引き継ぎ事項（次回のAIへ）
+
+### 現在の状況
+
+- ユーザーの端末: **Android Pixel 9a**
+- ログインURL: **https://footprint-app.vercel.app/** （このURLのみFirebaseの認証を通過可能）
+- PC（Windows）のChromeでGoogleフォトからダウンロードした写真をアップロードすると、**EXIF位置情報は正常に取得できる。**
+- しかし、**AndroidスマホのPWAアプリやChromeブラウザから写真を選択した場合のみ、OSのPhoto Picker（写真ピッカー）が必ず起動し、そこから渡されてくるファイルにはEXIF位置情報が含まれていない。**（OSレベルのプライバシー保護機能による自動削除）
+
+### 提案済みの次の対応策：Web Share Target API の実装
+
+この問題を根本的に解決する唯一の方法として、**「Web Share Target API」** の実装を提案済み。
+
+**概要:**
+- PWAアプリ（`manifest.json` と Service Worker）に `share_target` を設定することで、Footprint App を**Androidの「共有（Share）」メニューに宛先として登録**できる。
+- ユーザーはGoogleフォトなどから写真を選び、「共有」ボタン → 「Footprint App」にタップして送信することで、**ブラウザのファイルピッカーを一切経由しない**ため、OSによるGPS削除が発生しない。
+- 受け取ったファイルを `/records/new` ページで処理し、フォームに写真と位置情報を自動入力する。
+
+**現在のGitの状態:**
+- 作業用ブランチ `feature/web-share-target` を作成済み（`main` は現在の安定版を維持）。
+- ただし、このブランチをVercelにプッシュすると「テスト専用のプレビューURL」が発行され、そのURLへのログインは**FirebaseのConsoleで `Authorized domains（承認済みドメイン）`** に当該URLを追加しない限り `auth/unauthorized-domain` エラーになる。
+
+**ユーザーの判断待ち（次回再開時に確認）:**
+- **A案:** `feature/web-share-target` ブランチで開発 → Vercelのプレビュー専用URLをFirebaseに登録してテスト → OKならmainにマージ（安全だが、Firebaseの設定作業が1回必要）
+- **B案:** `main` ブランチに直接実装 → 不具合があれば即リバート（手軽だが、一時的にメイン環境に影響が出る可能性あり）
+
+**変更が必要になるファイル（Web Share Target 実装時）:**
+1. `public/manifest.json` — `share_target` の追記
+2. `app/records/new/page.tsx` or `app/records/new/_shareHandler.tsx` — 共有されたファイルを受け取る新規ロジック
+3. `components/RecordForm.tsx` — 共有で渡されたファイルをフォームに自動セットするロジック
+
+**最終更新**: 2026-02-24 03:30（次回AI引き継ぎ用サマリーを追記）
+
 
 
