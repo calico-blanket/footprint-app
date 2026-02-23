@@ -151,7 +151,10 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                         if (exif.lat && exif.lng && !initialData) {
                             setLocation({ lat: exif.lat, lng: exif.lng });
                             toast.info("写真から位置情報を取得しました");
+                        } else if (!initialData) {
+                            toast.warning("写真に位置情報(GPS)が含まれていません。端末の現在地を使用します。");
                         }
+
                         if (exif.date && !initialData) {
                             const dateStr = formatDateTimeLocal(new Date(exif.date));
                             setDate(dateStr);
@@ -333,7 +336,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                     <label className="block text-sm font-medium text-gray-700">写真 (最大5枚)</label>
                     <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg, image/png, image/heic, .jpg, .jpeg, .png, .heic"
                         multiple
                         onChange={handleFileChange}
                         className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
