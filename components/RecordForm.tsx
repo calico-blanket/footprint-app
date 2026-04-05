@@ -133,11 +133,21 @@ export default function RecordForm({ initialData }: RecordFormProps) {
     }, [initialData]);
 
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const newFilesArray = Array.from(e.target.files);
+        if (!e.target.files || e.target.files.length === 0) {
+            console.warn("onChange was triggered but no files were found");
+            return;
+        }
+
+        const newFilesArray = Array.from(e.target.files);
+        // Debugging toast to see if the file actually arrives from the camera
+        toast.info(`ファイルを受信しました: ${newFilesArray.length}枚`);
+
+        if (newFilesArray.length > 0) {
             // Check total count (existing + current new + incoming new)
             if (existingImages.length + newFiles.length + newFilesArray.length > 5) {
                 toast.error("最大5枚まで選択できます");
+                // Reset value before returning
+                e.target.value = "";
                 return;
             }
 
@@ -174,6 +184,9 @@ export default function RecordForm({ initialData }: RecordFormProps) {
 
             setNewFiles((prev) => [...prev, ...processedFiles]);
         }
+        
+        // 連続で同じファイルをアップロードできるようにリセット
+        e.target.value = "";
     };
 
     const handleDelete = async () => {
