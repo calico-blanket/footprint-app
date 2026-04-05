@@ -357,11 +357,10 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                             <input
                                 id="camera-input"
                                 type="file"
-                                accept="image/*,capture=camera"
+                                accept="image/*"
                                 capture="environment"
                                 onChange={handleFileChange}
                                 className="hidden"
-                                onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
                             />
                         </label>
                         <label className="cursor-pointer flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
@@ -376,7 +375,6 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                                 multiple
                                 onChange={handleFileChange}
                                 className="hidden"
-                                onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
                             />
                         </label>
                     </div>
