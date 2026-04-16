@@ -15,6 +15,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import ImageLightbox from "@/components/ImageLightbox";
 import { DEFAULT_CATEGORIES } from "@/components/CategoryManager";
 import { db } from "@/lib/firebase";
+import CopyFromRecord from "@/components/CopyFromRecord";
 
 interface RecordFormProps {
     initialData?: Record;
@@ -54,6 +55,7 @@ export default function RecordForm({ initialData }: RecordFormProps) {
     const [tags, setTags] = useState<string[]>(initialData?.tags || []);
     const [tagInput, setTagInput] = useState("");
     const [allTags, setAllTags] = useState<string[]>([]);
+    const [allRecords, setAllRecords] = useState<Record[]>([]);
     const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
     const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
     const [date, setDate] = useState<string>(
@@ -98,25 +100,30 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                 }
             };
 
-            const loadAllTags = async () => {
+            const loadAllTagsAndRecords = async () => {
                 try {
                     const snapshot = await getDocs(getUserRecordsCollection(user.uid));
                     const tagsSet = new Set<string>();
-                    snapshot.docs.forEach(doc => {
-                        const record = doc.data();
+                    const records: Record[] = [];
+                    snapshot.docs.forEach(d => {
+                        const record = d.data() as Record;
+                        records.push(record);
                         if (record.tags && Array.isArray(record.tags)) {
                             record.tags.forEach((tag: string) => tagsSet.add(tag));
                         }
                     });
+                    // 日付の新しい順に並べる
+                    records.sort((a, b) => b.date.toMillis() - a.date.toMillis());
+                    setAllRecords(records);
                     const collator = new Intl.Collator('ja', { sensitivity: 'base' });
                     setAllTags(Array.from(tagsSet).sort(collator.compare));
                 } catch (error) {
-                    console.error("Error loading tags:", error);
+                    console.error("Error loading tags/records:", error);
                 }
             };
 
             loadCategories();
-            loadAllTags();
+            loadAllTagsAndRecords();
         }
     }, [user, initialData]);
 
@@ -345,6 +352,21 @@ export default function RecordForm({ initialData }: RecordFormProps) {
                 onCancel={() => setShowDelete(false)}
             />
             <form onSubmit={handleSubmit} className="space-y-6 p-4 max-w-lg mx-auto bg-white rounded-lg shadow-sm">
+                {/* 過去の記録からコピー（新規登録時のみ表示） */}
+                {!initialData && (
+                    <CopyFromRecord
+                        allRecords={allRecords}
+                        allTags={allTags}
+                        onCopy={(record) => {
+                            setCategory(record.category);
+                            setTags(record.tags || []);
+                            if (record.location) {
+                                setLocation(record.location);
+                            }
+                            toast.success("過去の記録からコピーしました");
+                        }}
+                    />
+                )}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">写真 (最大5枚)</label>
                     <div className="flex gap-2">
