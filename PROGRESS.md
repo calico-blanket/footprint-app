@@ -540,3 +540,27 @@ git push origin main
         - コミットメッセージ: `feat: add copy-from-history feature with tag filter in RecordForm`
 
 **最終更新**: 2026-04-17
+
+---
+
+- **2026-04-26**:
+    - **マップピン移動機能の実装・デプロイ**:
+
+        ### 実装内容
+        #### `app/map/page.tsx` の変更
+        - **✏️ ピンを移動するボタン（editMode）**: マップ右下に配置。タップでドラッグ可能モードに切り替え。
+        - **🗺️ ドラッグ＆ドロップ移動**: `draggable={editMode}` で Leaflet のマーカーをドラッグ可能にし、`dragend` イベントで新座標をFirestoreに保存。
+        - **🔢 座標入力パネル**: editMode中に「座標で移動」ボタンをタップするとパネルが展開。移動対象の記録をドロップダウンで選択（**日付の新しい順**に並べ替え済み）し、緯度・経度を数値入力して移動。
+        - **💾 楽観的更新**: Firestore保存前にUI上で即座に位置を反映し、保存完了/エラーをトースト的なバッジで通知。
+        - **`MapView.tsx` の変更**: `editMode` と `onPinMove` プロパティを追加し、ドラッグ移動に対応。
+
+        ### バグ修正
+        - **マップ画面エラー修正**: `useSearchParams` がインポートされていないにもかかわらず `searchParams` 変数が宣言されていたためマップ画面がクラッシュしていた問題を修正（未使用の行を削除）。
+
+        ### Gitブランチと作業フロー
+        - `main` ブランチに直接コミット・push（`6ab4269`）
+        - 変更ファイル: `app/map/page.tsx`（207行追加、18行削除）
+        - コミットメッセージ: `fix: map page error and sort pin-move records by date desc`
+
+**最終更新**: 2026-04-26
+

@@ -55,6 +55,8 @@ interface MapViewProps {
     centerLocation?: { lat: number; lng: number } | null;
     autoFit?: boolean;
     categoryColors?: { [category: string]: string };
+    editMode?: boolean;
+    onPinMove?: (recordId: string, newLat: number, newLng: number) => void;
 }
 
 // Helper to create SVG icon HTML with custom color
@@ -80,7 +82,7 @@ function createColorIcon(color: string) {
 // Fallback blue icon (same color as PRESET_COLORS[0])
 const defaultColorIcon = createColorIcon("#3B82F6");
 
-export default function MapView({ records, centerLocation, autoFit = false, categoryColors = {} }: MapViewProps) {
+export default function MapView({ records, centerLocation, autoFit = false, categoryColors = {}, editMode = false, onPinMove }: MapViewProps) {
     // Filter and validate records
     const displayRecords = records.filter(r => r.location && typeof r.location.lat === 'number' && typeof r.location.lng === 'number');
 
@@ -171,14 +173,22 @@ export default function MapView({ records, centerLocation, autoFit = false, cate
                         position={[visibleLoc.lat, visibleLoc.lng]} // Use VISUAL location (snapped)
                         icon={markerIcon}
                         zIndexOffset={isTop ? 1000 : 0} // Bring active record to front
+                        draggable={editMode}
                         eventHandlers={{
                             click: () => {
                                 // Cycle to the next record in the group if multiple exist
-                                if (group.length > 1) {
+                                if (!editMode && group.length > 1) {
                                     setTopRecordIndices(prev => ({
                                         ...prev,
                                         [key]: (currentIndex + 1) % group.length
                                     }));
+                                }
+                            },
+                            dragend: (e) => {
+                                if (editMode && onPinMove) {
+                                    const marker = e.target;
+                                    const pos = marker.getLatLng();
+                                    onPinMove(record.id, pos.lat, pos.lng);
                                 }
                             }
                         }}
